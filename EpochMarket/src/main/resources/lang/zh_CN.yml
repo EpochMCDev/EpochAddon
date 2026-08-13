@@ -1,0 +1,77 @@
+prefix: "<gold><bold>EpochMarket</bold></gold> <gray>|</gray> "
+messages:
+  player-only: "<red>此命令只能由玩家执行。"
+  no-permission: "<red>你没有权限使用此市场。"
+  unknown-market: "<red>不存在市场 <yellow><market></yellow>。"
+  unknown-entry: "<red>市场 <yellow><market></yellow> 中不存在收购条目 <yellow><entry></yellow>。"
+  reloaded: "<green>市场配置与语言文件已重载。"
+  reload-failed: "<red>重载失败，请检查控制台日志。"
+  quota: "<yellow><player></yellow> 在 <gold><market>/<entry></gold>：已售 <aqua><sold></aqua>，剩余 <green><remaining></green>。"
+  quota-reset: "<green>已重置 <yellow><player></yellow> 的 <gold><market>/<entry></gold> 当日额度。"
+  unavailable: "<red>此收购条目暂不可用。"
+  no-items: "<red>背包中没有可出售的物品。"
+  no-quota: "<red>该物品今日收购额度已经用尽。"
+  changed: "<red>背包物品或额度已变动，请重新确认数量。"
+  sold: "<green>已出售 <yellow><amount></yellow> 个 <aqua><item></aqua>，获得 <gold><money></gold>。"
+  payout-failed: "<red>经济插件结算失败，物品未被出售。"
+  storage-failed: "<red>额度数据库操作失败，物品未被出售。"
+gui:
+  loading: "<gray>正在加载..."
+  selector-title: "<dark_gray>收购市场"
+  selector-empty: "<gray>暂无可访问市场"
+  back: "<yellow>返回市场列表"
+  unavailable: "<red>暂不可用"
+  unavailable-lore:
+    - "<gray>所需的插件或物品 ID 当前不可用。"
+    - "<gray>请联系管理员检查配置。"
+  entry-lore:
+    - "<gray>单价：<gold><unit_price></gold> / 个"
+    - "<gray>今日剩余：<green><remaining></green><gray> / <aqua><limit></aqua>"
+    - ""
+    - "<yellow>点击选择出售数量"
+  confirm-title: "<dark_gray>确认出售"
+  confirm-item-lore:
+    - "<gray>选择数量：<yellow><amount></yellow>"
+    - "<gray>背包可售：<aqua><inventory></aqua>"
+    - "<gray>额度剩余：<green><remaining></green>"
+    - "<gray>单价：<gold><unit_price></gold>"
+    - "<gray>总价：<gold><total_price></gold>"
+  add-one: "<green>+1"
+  add-sixteen: "<green>+16"
+  add-sixty-four: "<green>+64"
+  subtract-one: "<red>-1"
+  subtract-sixteen: "<red>-16"
+  subtract-sixty-four: "<red>-64"
+  sell-all: "<aqua>出售全部"
+  sell-all-lore:
+    - "<gray>选择背包可售数量与额度中较小的值。"
+  confirm: "<green><bold>确认出售"
+  confirm-lore:
+    - "<gray>出售 <yellow><amount></yellow> 个"
+    - "<gray>获得 <gold><total_price></gold>"
+  cancel: "<red>取消"
+markets:
+  minerals:
+    title: "<dark_gray>矿物收购"
+    selector-name: "<gold>矿物收购"
+    selector-lore:
+      - "<gray>出售矿物与特殊材料"
+      - "<yellow>点击打开"
+    entries:
+      iron_ore:
+        name: "<white>铁矿石"
+      ce_crystal:
+        name: "<light_purple>CraftEngine 水晶"
+      sf_copper_dust:
+        name: "<gold>粘液科技铜粉"
+  plants:
+    title: "<dark_green>植物收购"
+    selector-name: "<green>植物收购"
+    selector-lore:
+      - "<gray>出售农作物"
+      - "<yellow>点击打开"
+    entries:
+      wheat:
+        name: "<yellow>小麦"
+      carrots:
+        name: "<gold>胡萝卜"

@@ -1,0 +1,77 @@
+prefix: "<gold><bold>EpochMarket</bold></gold> <gray>|</gray> "
+messages:
+  player-only: "<red>This command can only be run by a player."
+  no-permission: "<red>You do not have permission to access this market."
+  unknown-market: "<red>Unknown market <yellow><market></yellow>."
+  unknown-entry: "<red>Market <yellow><market></yellow> has no entry <yellow><entry></yellow>."
+  reloaded: "<green>Market configuration and language files reloaded."
+  reload-failed: "<red>Reload failed. Check the console for details."
+  quota: "<yellow><player></yellow> at <gold><market>/<entry></gold>: sold <aqua><sold></aqua>, remaining <green><remaining></green>."
+  quota-reset: "<green>Reset today's quota for <yellow><player></yellow> at <gold><market>/<entry></gold>."
+  unavailable: "<red>This purchase entry is currently unavailable."
+  no-items: "<red>You have no matching items in your inventory."
+  no-quota: "<red>Today's quota for this item is exhausted."
+  changed: "<red>Your inventory or quota changed. Please choose the quantity again."
+  sold: "<green>Sold <yellow><amount></yellow> <aqua><item></aqua> for <gold><money></gold>."
+  payout-failed: "<red>The economy provider could not complete the payment. Your items were not sold."
+  storage-failed: "<red>The quota database could not be updated. Your items were not sold."
+gui:
+  loading: "<gray>Loading..."
+  selector-title: "<dark_gray>Markets"
+  selector-empty: "<gray>No accessible markets"
+  back: "<yellow>Back to markets"
+  unavailable: "<red>Unavailable"
+  unavailable-lore:
+    - "<gray>The required plugin or item ID is unavailable."
+    - "<gray>Please contact an administrator."
+  entry-lore:
+    - "<gray>Unit price: <gold><unit_price></gold> each"
+    - "<gray>Remaining today: <green><remaining></green><gray> / <aqua><limit></aqua>"
+    - ""
+    - "<yellow>Click to choose a quantity"
+  confirm-title: "<dark_gray>Confirm sale"
+  confirm-item-lore:
+    - "<gray>Selected: <yellow><amount></yellow>"
+    - "<gray>In inventory: <aqua><inventory></aqua>"
+    - "<gray>Quota remaining: <green><remaining></green>"
+    - "<gray>Unit price: <gold><unit_price></gold>"
+    - "<gray>Total: <gold><total_price></gold>"
+  add-one: "<green>+1"
+  add-sixteen: "<green>+16"
+  add-sixty-four: "<green>+64"
+  subtract-one: "<red>-1"
+  subtract-sixteen: "<red>-16"
+  subtract-sixty-four: "<red>-64"
+  sell-all: "<aqua>Sell all"
+  sell-all-lore:
+    - "<gray>Choose the smaller of inventory and remaining quota."
+  confirm: "<green><bold>Confirm sale"
+  confirm-lore:
+    - "<gray>Sell <yellow><amount></yellow>"
+    - "<gray>Receive <gold><total_price></gold>"
+  cancel: "<red>Cancel"
+markets:
+  minerals:
+    title: "<dark_gray>Mineral Market"
+    selector-name: "<gold>Mineral Market"
+    selector-lore:
+      - "<gray>Sell ores and special materials"
+      - "<yellow>Click to open"
+    entries:
+      iron_ore:
+        name: "<white>Iron Ore"
+      ce_crystal:
+        name: "<light_purple>CraftEngine Crystal"
+      sf_copper_dust:
+        name: "<gold>Slimefun Copper Dust"
+  plants:
+    title: "<dark_green>Plant Market"
+    selector-name: "<green>Plant Market"
+    selector-lore:
+      - "<gray>Sell crops"
+      - "<yellow>Click to open"
+    entries:
+      wheat:
+        name: "<yellow>Wheat"
+      carrots:
+        name: "<gold>Carrot"

@@ -1,0 +1,36 @@
+title-key: markets.minerals.title
+rows: 3
+# Leave blank to make this market public.
+permission: ""
+selector:
+  icon: IRON_INGOT
+  name-key: markets.minerals.selector-name
+  lore-key: markets.minerals.selector-lore
+entries:
+  iron_ore:
+    source: VANILLA
+    item-id: IRON_ORE
+    icon: IRON_ORE
+    slot: 11
+    unit-price: 8.0
+    daily-limit: 256
+    name-key: markets.minerals.entries.iron_ore.name
+  ce_crystal:
+    source: CRAFT_ENGINE
+    # Replace with the ID from your CraftEngine item configuration.
+    item-id: epoch:crystal
+    icon: AMETHYST_SHARD
+    slot: 13
+    unit-price: 45.0
+    daily-limit: 64
+    name-key: markets.minerals.entries.ce_crystal.name
+  sf_copper_dust:
+    source: SLIMEFUN
+    # Replace with an installed Slimefun/addon item ID.
+    item-id: COPPER_DUST
+    icon: GLOWSTONE_DUST
+    slot: 15
+    unit-price: 12.0
+    daily-limit: 128
+    name-key: markets.minerals.entries.sf_copper_dust.name
+

@@ -1,0 +1,25 @@
+title-key: markets.plants.title
+rows: 3
+permission: ""
+selector:
+  icon: WHEAT
+  name-key: markets.plants.selector-name
+  lore-key: markets.plants.selector-lore
+entries:
+  wheat:
+    source: VANILLA
+    item-id: WHEAT
+    icon: WHEAT
+    slot: 12
+    unit-price: 2.0
+    daily-limit: 512
+    name-key: markets.plants.entries.wheat.name
+  carrots:
+    source: VANILLA
+    item-id: CARROT
+    icon: CARROT
+    slot: 14
+    unit-price: 2.5
+    daily-limit: 512
+    name-key: markets.plants.entries.carrots.name
+

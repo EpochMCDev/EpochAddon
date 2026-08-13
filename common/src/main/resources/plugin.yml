@@ -1,0 +1,5 @@
+name: EpochCommon
+version: ${version}
+main: com.epochaddon.common.EpochCommon
+api-version: "26.2"
+authors: [xiaobai]

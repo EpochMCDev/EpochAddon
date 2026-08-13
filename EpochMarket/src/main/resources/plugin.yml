@@ -1,0 +1,21 @@
+name: EpochMarket
+version: '${version}'
+main: com.epochmarket.EpochMarketPlugin
+api-version: '26.2'
+description: Daily-limited market GUI for Paper.
+author: EpochMarket
+depend: [Vault]
+softdepend: [CraftEngine, Slimefun]
+commands:
+  epochmarket:
+    description: Open and administer EpochMarket.
+    aliases: [emarket]
+    usage: /epochmarket [open|reload|quota|reset]
+permissions:
+  epochmarket.use:
+    description: Allows opening EpochMarket.
+    default: true
+  epochmarket.admin:
+    description: Allows EpochMarket administration and bypasses market permissions.
+    default: op
+

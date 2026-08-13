@@ -1,0 +1,6 @@
+name: PluginTwo
+version: ${version}
+main: com.epochaddon.plugintwo.PluginTwo
+api-version: "26.2"
+depend: [EpochCommon]
+authors: [xiaobai]

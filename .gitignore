@@ -1,0 +1,19 @@
+# Superpowers skill artifacts
+.superpowers/
+docs/superpowers/
+
+# Worktrees
+.worktrees/
+
+# Gradle
+.gradle/
+build/
+.kotlin/
+out/
+
+# Runtime data
+*.db
+*.db-journal
+
+# Local tooling config
+reasonix.toml

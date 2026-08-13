@@ -1,0 +1,11 @@
+# The language file name in plugins/EpochMarket/lang, without the .yml suffix.
+default-language: zh_CN
+
+# A Java timezone ID. Daily limits reset when this zone enters a new local date.
+reset-timezone: Asia/Shanghai
+
+database:
+  file: market.db
+  # Delete quota rows older than this many days on startup. Set 0 to retain all history.
+  retention-days: 30
+
