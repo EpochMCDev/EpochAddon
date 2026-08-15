@@ -5,6 +5,7 @@ import io.github.thebusybiscuit.slimefun4.epochrebirth.config.LanguageService
 import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.PotionMeta
 import org.bukkit.inventory.meta.SkullMeta
@@ -20,6 +21,7 @@ class RebirthItems(private val keys: PdcKeys, private val language: LanguageServ
         meta.displayName(language.component("items.${item.id}.name"))
         meta.lore(language.components("items.${item.id}.lore").map { it.decoration(TextDecoration.ITALIC, false) })
         meta.persistentDataContainer.set(keys.itemId, PersistentDataType.STRING, item.id)
+        itemModel(item)?.let(meta::setItemModel)
         if (item == RebirthItem.MEAT && meta is SkullMeta) {
             val profile = Bukkit.createProfile(MEAT_SKULL_UUID, null)
             profile.setProperty(ProfileProperty("textures", MEAT_SKULL_TEXTURE))
@@ -56,7 +58,18 @@ class RebirthItems(private val keys: PdcKeys, private val language: LanguageServ
         else -> null
     }
 
+    private fun itemModel(item: RebirthItem): NamespacedKey? = when (item) {
+        RebirthItem.SOUL_BOTTLE,
+        RebirthItem.SOUL,
+        RebirthItem.TOTEM_BASIC,
+        RebirthItem.TOTEM_ADVANCED,
+        RebirthItem.TOTEM_ULTIMATE -> NamespacedKey(ITEM_MODEL_NAMESPACE, item.id)
+        else -> null
+    }
+
     private companion object {
+        private const val ITEM_MODEL_NAMESPACE = "epochrebirth"
+
         /** 肉块头颅皮肤：Head Database "Red Meat"（Custom Head ID: 7408） */
         private const val MEAT_SKULL_TEXTURE =
             "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzhjZmQwNTg4YThhOTNiOGNkMjFiZGQyY2UxNjU0ODljYjM5Mzk0ODcxNGZkZDg1ZmIxMGU0NGQ0ODg2ZjYifX19"

@@ -16,5 +16,9 @@ out/
 *.db
 *.db-journal
 
+# Local Minecraft resource packs
+/粘液科技材质包/
+/粘液科技材质包-*.zip
+
 # Local tooling config
 reasonix.toml
