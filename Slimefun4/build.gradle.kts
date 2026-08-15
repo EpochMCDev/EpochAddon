@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter
 
 plugins {
     java
-    kotlin("jvm")
+    kotlin("jvm") version "2.3.21"
     `maven-publish`
     alias(libs.plugins.spotless)
     alias(libs.plugins.shadow)
@@ -91,6 +91,14 @@ sourceSets.main {
     java.exclude("**/package-info.java")
 }
 
+sourceSets.main {
+    // 仅借用 Common 的公共 API 和版本工具参与编译。
+    // shadowJar 会排除这些类，运行时由硬依赖 EpochCommon 提供。
+    kotlin.srcDir("../common/src/main/kotlin/com/epochaddon/common/scoreboard")
+    kotlin.srcDir("../common/src/main/kotlin/com/epochaddon/common/util")
+    kotlin.exclude("**/EpochScoreboardService.kt")
+}
+
 tasks.test {
     useJUnitPlatform()
     findProperty("slimefunRealDatabase")?.toString()?.let {
@@ -152,6 +160,8 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("net.guizhanss.guizhanlib", "io.github.thebusybiscuit.slimefun4.libraries.guizhanlib")
     relocate("kotlin", "io.github.thebusybiscuit.slimefun4.libraries.kotlin")
     relocate("org.jetbrains.annotations", "io.github.thebusybiscuit.slimefun4.libraries.annotations")
+    exclude("com/epochaddon/common/scoreboard/**")
+    exclude("com/epochaddon/common/util/VersionUtil*")
     /**exclude {
         it.path == "META-INF" || it.path.startsWith("META-INF/")
     }*/
@@ -191,10 +201,6 @@ kotlin {
     compilerOptions {
         jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
     }
-}
-
-sourceSets.main {
-    kotlin.srcDir("../common/src/main/kotlin")
 }
 
 fun Project.resolveVersion(): String {

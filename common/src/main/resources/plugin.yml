@@ -3,3 +3,14 @@ version: ${version}
 main: com.epochaddon.common.EpochCommon
 api-version: "26.2"
 authors: [xiaobai]
+
+commands:
+  esb:
+    description: Toggle the unified EpochMC scoreboard for a player.
+    aliases: [epochscoreboard]
+    usage: '/esb <on|off|toggle|status> | /esb <player|@a> <on|off|toggle|status>'
+
+permissions:
+  epochcommon.admin:
+    description: Allows managing the unified EpochMC scoreboard.
+    default: op

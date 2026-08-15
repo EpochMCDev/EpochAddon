@@ -9,10 +9,35 @@ enum class RebirthItem(val id: String) {
     CORE_ULTIMATE("core_ultimate"),
     TOTEM_BASIC("totem_basic"),
     TOTEM_ADVANCED("totem_advanced"),
-    TOTEM_ULTIMATE("totem_ultimate");
+    TOTEM_ULTIMATE("totem_ultimate"),
+    HEALING_CORE("healing_core"),
+    HEALING_ARROW_I("healing_arrow_i"),
+    HEALING_ARROW_II("healing_arrow_ii");
 
     companion object {
         fun fromId(id: String): RebirthItem? = entries.firstOrNull { it.id == id }
+    }
+}
+
+enum class HealingTier(
+    val id: String,
+    val item: RebirthItem,
+    val intervalSeconds: Int,
+    val recoveries: Int = 5
+) {
+    I("i", RebirthItem.HEALING_ARROW_I, 36),
+    II("ii", RebirthItem.HEALING_ARROW_II, 30);
+
+    val durationSeconds: Int
+        get() = intervalSeconds * recoveries
+
+    val intervalMillis: Long
+        get() = intervalSeconds * 1000L
+
+    companion object {
+        fun fromId(id: String): HealingTier? = entries.firstOrNull { it.id == id }
+
+        fun fromItem(item: RebirthItem?): HealingTier? = entries.firstOrNull { it.item == item }
     }
 }
 

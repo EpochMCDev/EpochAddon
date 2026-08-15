@@ -22,6 +22,7 @@ softdepend:
 
 depend:
   - Vault
+  - EpochCommon
 
 # We hook into these plugins too, but they depend on Slimefun.
 loadBefore:
@@ -37,7 +38,7 @@ commands:
   erb:
     description: Open the resurrection menu and administer EpochRebirth.
     aliases: [epochrebirth]
-    usage: /erb [menu|get|set|give|reload]
+    usage: /erb [menu|get|set|give|resethealth|reload]
 
 # Default permissions
 permissions:

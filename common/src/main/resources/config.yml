@@ -1,0 +1,7 @@
+scoreboard:
+  # 新玩家默认开启；玩家可使用 /esb 单独修改自己的状态。
+  default-enabled: true
+  title: '<dark_red>☠ <red>EpochMC'
+  # 检查并重新接管被其他插件替换的侧边栏。20 tick = 1 秒。
+  # 业务模块的数据变更会立即请求刷新，不依赖这个周期。
+  refresh-ticks: 20

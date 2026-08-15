@@ -1,0 +1,19 @@
+name: EpochMinerals
+version: '${version}'
+main: com.epochaddon.minerals.EpochMineralsPlugin
+api-version: '26.2'
+description: Mine stone to accumulate points and receive mineral drops.
+authors: [xiaobai]
+depend: [EpochCommon]
+commands:
+  stone:
+    description: View the mining points leaderboard.
+    usage: '/stone'
+  miningpoints:
+    description: Temporarily change mining point multipliers for selected players.
+    aliases: [mpoints]
+    usage: '/miningpoints <player|@a> <multiplier> <seconds> | /miningpoints <player|@a> stop'
+permissions:
+  epochminerals.admin:
+    description: Allows managing temporary player mining point multipliers.
+    default: op

@@ -1,6 +1,7 @@
 # Superpowers skill artifacts
 .superpowers/
 docs/superpowers/
+**/docs/superpowers/plans/
 
 # Worktrees
 .worktrees/

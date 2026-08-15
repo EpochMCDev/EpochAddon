@@ -14,6 +14,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.entity.EntityResurrectEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
 class TotemListener(
@@ -28,7 +29,12 @@ class TotemListener(
     @EventHandler
     fun onResurrect(event: EntityResurrectEvent) {
         val player = event.entity as? Player ?: return
-        if (isTotem(player.inventory.itemInMainHand) || isTotem(player.inventory.itemInOffHand)) {
+        val stack = when (event.hand) {
+            EquipmentSlot.HAND -> player.inventory.itemInMainHand
+            EquipmentSlot.OFF_HAND -> player.inventory.itemInOffHand
+            else -> null
+        }
+        if (isTotem(stack)) {
             event.isCancelled = true
         }
     }
@@ -42,8 +48,13 @@ class TotemListener(
     fun onInteract(event: PlayerInteractEvent) {
         if (event.action != Action.RIGHT_CLICK_AIR && event.action != Action.RIGHT_CLICK_BLOCK) return
         val player = event.player
-        val hand = player.inventory.itemInMainHand
-        val tier = when (items.identityOf(hand)) {
+        val hand = event.hand ?: return
+        val stack = if (hand == EquipmentSlot.OFF_HAND) {
+            player.inventory.itemInOffHand
+        } else {
+            player.inventory.itemInMainHand
+        }
+        val tier = when (items.identityOf(stack)) {
             RebirthItem.TOTEM_BASIC -> Tier.BASIC
             RebirthItem.TOTEM_ADVANCED -> Tier.ADVANCED
             RebirthItem.TOTEM_ULTIMATE -> Tier.ULTIMATE
@@ -57,10 +68,12 @@ class TotemListener(
             return
         }
 
-        if (hand.amount <= 1) {
+        if (stack.amount <= 1 && hand == EquipmentSlot.OFF_HAND) {
+            player.inventory.setItemInOffHand(null)
+        } else if (stack.amount <= 1) {
             player.inventory.setItemInMainHand(null)
         } else {
-            hand.amount -= 1
+            stack.amount -= 1
         }
         player.playSound(player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
         player.sendMessage(language.component("messages.totem-added", mapOf(

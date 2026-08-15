@@ -21,7 +21,10 @@ class EconomyService {
      * 先尝试正常提款；若经济插件拒绝，再尝试存入负数金额作为回退。
      */
     fun withdraw(player: Player, amount: Double): Boolean {
-        val economy = economy ?: return false
+        val economy = economy ?: run {
+            if (!setup()) return false
+            economy ?: return false
+        }
         if (amount <= 0) return true
         if (economy.withdrawPlayer(player, amount).transactionSuccess()) return true
         return try {

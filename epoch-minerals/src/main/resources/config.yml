@@ -1,0 +1,99 @@
+# 可获得矿物积分的方块与游戏模式。
+mining:
+  blocks:
+    - STONE
+    - DEEPSLATE
+  game-modes:
+    - SURVIVAL
+  points-per-block: 1.0
+
+# 每累计指定数量的矿物积分，就掉落 1 个对应矿物。
+rewards:
+  coal:
+    material: COAL
+    display-name: '<dark_gray>煤炭</dark_gray>'
+    scoreboard-name: '<dark_gray>煤</dark_gray>'
+    points: 18
+  raw-copper:
+    material: RAW_COPPER
+    display-name: '<gold>粗铜</gold>'
+    scoreboard-name: '<gold>铜</gold>'
+    points: 26
+  raw-iron:
+    material: RAW_IRON
+    display-name: '<white>粗铁</white>'
+    scoreboard-name: '<white>铁</white>'
+    points: 38
+  quartz:
+    material: QUARTZ
+    display-name: '<white>下界石英</white>'
+    scoreboard-name: '<white>石英</white>'
+    points: 40
+  raw-gold:
+    material: RAW_GOLD
+    display-name: '<yellow>粗金</yellow>'
+    scoreboard-name: '<yellow>金</yellow>'
+    points: 38
+  redstone:
+    material: REDSTONE
+    display-name: '<red>红石粉</red>'
+    scoreboard-name: '<red>红石</red>'
+    points: 20
+  lapis:
+    material: LAPIS_LAZULI
+    display-name: '<blue>青金石</blue>'
+    scoreboard-name: '<blue>青金</blue>'
+    points: 24
+  diamond:
+    material: DIAMOND
+    display-name: '<aqua>钻石</aqua>'
+    scoreboard-name: '<aqua>钻</aqua>'
+    points: 384
+  emerald:
+    material: EMERALD
+    display-name: '<green>绿宝石</green>'
+    scoreboard-name: '<green>绿宝石</green>'
+    points: 768
+
+# 特殊矿区为长方体区域，区域内积分乘以 1.25。
+# 可按下方格式添加任意数量的区域：
+# regions:
+#   mine-a:
+#     world: world
+#     min: {x: -100, y: -64, z: -100}
+#     max: {x: 100, y: 80, z: 100}
+special-regions:
+  multiplier: 1.25
+  regions: {}
+
+# 每次有效挖掘有 1% 概率找到矿脉；触发该次挖掘也享受倍率。
+vein:
+  chance: 0.01
+  multiplier: 3.0
+  duration-seconds: 13
+
+storage:
+  # 设为 0 可关闭定时保存；插件关闭时仍会保存。
+  autosave-seconds: 300
+
+scoreboard:
+  section-title: '<gold><bold>矿物资源</bold></gold>'
+  points-line: '<gray>总积分 <white>{points}</white>'
+  remaining-line: '<gray>{name} <white>{remaining}</white></gray>'
+  status-line: '<yellow>倍数 x{base}{bonus}{duration}</yellow>'
+
+# 消息使用 MiniMessage 格式。
+messages:
+  vein-start: '<gold><bold>找到矿脉！</bold></gold> <yellow>{seconds} 秒内矿物积分 x{multiplier}</yellow>'
+  vein-extended: '<gold><bold>找到矿脉！</bold></gold> <yellow>挖矿积分加成延长 {seconds} 秒。</yellow>'
+  leaderboard-header: '<gold><bold>挖矿积分排行榜</bold></gold> <gray>共 {count} 名玩家</gray>'
+  leaderboard-entry: '<yellow>#{rank}</yellow> <white>{player}</white> <gray>-</gray> <gold>{points}</gold>'
+  leaderboard-empty: '<gray>目前还没有玩家获得挖矿积分。'
+  boost-started: '<green>已为 <white>{targets}</white> 开启挖矿积分加成：<yellow>x{multiplier}</yellow>，持续 <white>{seconds}</white> 秒。'
+  boost-stopped: '<yellow>已结束 <white>{targets}</white> 的挖矿积分加成，共处理 {count} 名玩家。'
+  boost-not-active: '<gray><white>{targets}</white></gray> 当前没有生效中的挖矿积分加成。'
+  command-usage: '<gray>用法：<white>/miningpoints target multiplier seconds</white> 或 <white>/miningpoints target stop</white>'
+  invalid-multiplier: '<red>积分倍数必须是大于 0 且不超过 10000 的数字。'
+  invalid-duration: '<red>持续时间必须是 1~86400 秒的整数。'
+  target-not-found: '<red>找不到符合条件的在线玩家。'
+  no-permission: '<red>你没有权限使用这个指令。'

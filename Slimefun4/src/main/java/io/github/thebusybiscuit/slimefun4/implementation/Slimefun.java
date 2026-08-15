@@ -39,6 +39,7 @@ import io.github.thebusybiscuit.slimefun4.core.services.github.GitHubService;
 import io.github.thebusybiscuit.slimefun4.core.services.holograms.HologramsService;
 import io.github.thebusybiscuit.slimefun4.core.services.profiler.SlimefunProfiler;
 import io.github.thebusybiscuit.slimefun4.core.services.sounds.SoundService;
+import io.github.thebusybiscuit.slimefun4.epochrebirth.RebirthSetup;
 import io.github.thebusybiscuit.slimefun4.implementation.items.altar.AncientAltar;
 import io.github.thebusybiscuit.slimefun4.implementation.items.altar.AncientPedestal;
 import io.github.thebusybiscuit.slimefun4.implementation.items.backpacks.Cooler;
@@ -475,6 +476,7 @@ public final class Slimefun extends JavaPlugin implements SlimefunAddon, ICompat
             return;
         }
 
+        RebirthSetup.shutdown();
         SlimefunExtended.shutdown();
         getSQLProfiler().shutdown();
 

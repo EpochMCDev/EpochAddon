@@ -6,8 +6,10 @@ import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.PotionMeta
 import org.bukkit.inventory.meta.SkullMeta
 import org.bukkit.persistence.PersistentDataType
+import org.bukkit.potion.PotionType
 import java.util.UUID
 
 class RebirthItems(private val keys: PdcKeys, private val language: LanguageService) {
@@ -22,6 +24,9 @@ class RebirthItems(private val keys: PdcKeys, private val language: LanguageServ
             val profile = Bukkit.createProfile(MEAT_SKULL_UUID, null)
             profile.setProperty(ProfileProperty("textures", MEAT_SKULL_TEXTURE))
             meta.playerProfile = profile
+        }
+        if (meta is PotionMeta) {
+            potionType(item)?.let(meta::setBasePotionType)
         }
         stack.itemMeta = meta
         return stack
@@ -41,6 +46,14 @@ class RebirthItems(private val keys: PdcKeys, private val language: LanguageServ
         RebirthItem.CORE_ADVANCED -> Material.NETHER_WART_BLOCK
         RebirthItem.CORE_ULTIMATE -> Material.RED_NETHER_BRICKS
         RebirthItem.TOTEM_BASIC, RebirthItem.TOTEM_ADVANCED, RebirthItem.TOTEM_ULTIMATE -> Material.TOTEM_OF_UNDYING
+        RebirthItem.HEALING_CORE, RebirthItem.HEALING_ARROW_I, RebirthItem.HEALING_ARROW_II -> Material.TIPPED_ARROW
+    }
+
+    private fun potionType(item: RebirthItem): PotionType? = when (item) {
+        RebirthItem.HEALING_CORE -> PotionType.SLOW_FALLING
+        RebirthItem.HEALING_ARROW_I -> PotionType.REGENERATION
+        RebirthItem.HEALING_ARROW_II -> PotionType.HEALING
+        else -> null
     }
 
     private companion object {

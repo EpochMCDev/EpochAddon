@@ -26,11 +26,11 @@ class RebirthConfig {
 
     val penalties: Map<String, Penalty> = mapOf(
         "none" to Penalty(10.0, 3200.0, effectsOf(
-            "HUNGER" to (3 to 60), "BLINDNESS" to (1 to 10), "MINING_FATIGUE" to (1 to 90),
+            "HUNGER" to (3 to 60), "BLINDNESS" to (1 to 5), "MINING_FATIGUE" to (1 to 30),
             "SLOWNESS" to (1 to 120), "WEAKNESS" to (1 to 120)
         )),
         "basic" to Penalty(8.0, 1600.0, effectsOf(
-            "HUNGER" to (2 to 60), "BLINDNESS" to (1 to 5), "SLOWNESS" to (1 to 90), "WEAKNESS" to (1 to 60)
+            "HUNGER" to (2 to 60), "BLINDNESS" to (1 to 3), "SLOWNESS" to (1 to 90), "WEAKNESS" to (1 to 60)
         )),
         "advanced" to Penalty(6.0, 800.0, effectsOf(
             "HUNGER" to (1 to 60), "SLOWNESS" to (1 to 30), "WEAKNESS" to (1 to 30)

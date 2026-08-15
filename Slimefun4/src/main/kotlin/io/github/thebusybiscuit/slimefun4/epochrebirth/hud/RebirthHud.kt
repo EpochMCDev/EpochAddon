@@ -1,75 +1,57 @@
 package io.github.thebusybiscuit.slimefun4.epochrebirth.hud
 
+import com.epochaddon.common.scoreboard.ScoreboardProvider
+import com.epochaddon.common.scoreboard.ScoreboardService
 import io.github.thebusybiscuit.slimefun4.epochrebirth.config.LanguageService
 import io.github.thebusybiscuit.slimefun4.epochrebirth.config.RebirthConfig
 import io.github.thebusybiscuit.slimefun4.epochrebirth.item.Tier
 import io.github.thebusybiscuit.slimefun4.epochrebirth.storage.ResurrectionStore
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import org.bukkit.Bukkit
+import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
-import org.bukkit.event.EventHandler
-import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerQuitEvent
-import org.bukkit.scoreboard.Criteria
-import org.bukkit.scoreboard.DisplaySlot
-import org.bukkit.scoreboard.Scoreboard
-import java.util.UUID
+import org.bukkit.plugin.Plugin
 
 class RebirthHud(
+    private val plugin: Plugin,
+    private val scoreboard: ScoreboardService,
     private val store: ResurrectionStore,
     private val config: RebirthConfig,
     private val language: LanguageService
-) : Listener {
+) {
 
-    private val serializer = LegacyComponentSerializer.legacySection()
-    private val boards = HashMap<UUID, Scoreboard>()
-    private val entriesByPlayer = HashMap<UUID, MutableSet<String>>()
+    init {
+        scoreboard.registerProvider(plugin, PROVIDER_ID, PROVIDER_ORDER, object : ScoreboardProvider {
+            override fun lines(player: Player): List<Component> = scoreboardLines(player)
+        })
+    }
 
     fun update(player: Player) {
-        if (!config.hudEnabled) return
-        val board = boards.getOrPut(player.uniqueId) {
-            Bukkit.getScoreboardManager().newScoreboard.also { player.scoreboard = it }
-        }
-        val objective = board.getObjective(OBJECTIVE)
-            ?: board.registerNewObjective(OBJECTIVE, Criteria.DUMMY, language.component("hud.title"))
-        objective.displaySlot = DisplaySlot.SIDEBAR
-
-        entriesByPlayer[player.uniqueId]?.forEach { board.resetScores(it) }
-        entriesByPlayer[player.uniqueId] = mutableSetOf()
-
-        Tier.entries.forEachIndexed { index, tier ->
-            val count = store.count(player, tier)
-            val line = language.component("hud.${tier.id}-line", mapOf("count" to count.toString()))
-            val entry = serializer.serialize(line)
-            objective.getScore(entry).score = Tier.entries.size - index
-            entriesByPlayer.getValue(player.uniqueId).add(entry)
-        }
+        scoreboard.refresh(player)
     }
 
     fun refreshAll() {
-        Bukkit.getOnlinePlayers().forEach { update(it) }
-    }
-
-    @EventHandler
-    fun onJoin(event: PlayerJoinEvent) {
-        update(event.player)
-    }
-
-    @EventHandler
-    fun onQuit(event: PlayerQuitEvent) {
-        boards.remove(event.player.uniqueId)
-        entriesByPlayer.remove(event.player.uniqueId)
+        scoreboard.refreshAll()
     }
 
     fun disable() {
-        val main = Bukkit.getScoreboardManager().mainScoreboard
-        boards.keys.mapNotNull { Bukkit.getPlayer(it) }.forEach { it.scoreboard = main }
-        boards.clear()
-        entriesByPlayer.clear()
+        scoreboard.unregisterProvider(plugin, PROVIDER_ID)
+    }
+
+    private fun scoreboardLines(player: Player): List<Component> {
+        if (!config.hudEnabled) {
+            return emptyList()
+        }
+
+        return buildList {
+            add(language.component("hud.section-title"))
+            Tier.entries.forEach { tier ->
+                val count = store.count(player, tier)
+                add(language.component("hud.${tier.id}-line", mapOf("count" to count.toString())))
+            }
+        }
     }
 
     companion object {
-        private const val OBJECTIVE = "epoch_rebirth"
+        private const val PROVIDER_ID = "rebirth"
+        private const val PROVIDER_ORDER = 200
     }
 }

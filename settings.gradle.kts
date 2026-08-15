@@ -25,5 +25,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "EpochAddon"
 
-include("common", "epoch-market", "plugin-two", "Slimefun4")
+include("common", "epoch-market", "epoch-minerals", "Slimefun4")
 findProject(":epoch-market")!!.projectDir = file("EpochMarket")

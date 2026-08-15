@@ -1,5 +1,6 @@
 package io.github.thebusybiscuit.slimefun4.epochrebirth
 
+import com.epochaddon.common.scoreboard.ScoreboardService
 import com.epochaddon.common.util.VersionUtil
 import io.github.thebusybiscuit.slimefun4.epochrebirth.command.RebirthCommand
 import io.github.thebusybiscuit.slimefun4.epochrebirth.config.LanguageService
@@ -7,10 +8,13 @@ import io.github.thebusybiscuit.slimefun4.epochrebirth.config.RebirthConfig
 import io.github.thebusybiscuit.slimefun4.epochrebirth.death.DeathHandler
 import io.github.thebusybiscuit.slimefun4.epochrebirth.economy.EconomyService
 import io.github.thebusybiscuit.slimefun4.epochrebirth.gui.PriorityMenu
+import io.github.thebusybiscuit.slimefun4.epochrebirth.healing.HealingService
+import io.github.thebusybiscuit.slimefun4.epochrebirth.health.HealthPenaltyService
 import io.github.thebusybiscuit.slimefun4.epochrebirth.hud.RebirthHud
 import io.github.thebusybiscuit.slimefun4.epochrebirth.item.ItemGuardListener
 import io.github.thebusybiscuit.slimefun4.epochrebirth.item.PdcKeys
 import io.github.thebusybiscuit.slimefun4.epochrebirth.item.RebirthItems
+import io.github.thebusybiscuit.slimefun4.epochrebirth.join.FirstJoinGiftListener
 import io.github.thebusybiscuit.slimefun4.epochrebirth.recipe.RecipeService
 import io.github.thebusybiscuit.slimefun4.epochrebirth.recipe.SlimefunBridge
 import io.github.thebusybiscuit.slimefun4.epochrebirth.soul.SoulListener
@@ -22,8 +26,12 @@ import java.util.logging.Level
 /** EpochRebirth 合并版初始化入口，由 SlimefunItemSetup 调用 */
 object RebirthSetup {
 
+    private var activeHud: RebirthHud? = null
+
     @JvmStatic
     fun setup(plugin: Slimefun) {
+        shutdown()
+        var hud: RebirthHud? = null
         try {
             val keys = PdcKeys()
             val language = LanguageService(plugin)
@@ -35,37 +43,55 @@ object RebirthSetup {
             }
             val items = RebirthItems(keys, language)
             val store = ResurrectionStore(keys) { config.maxCount }
-            val hud = RebirthHud(store, config, language)
-            val recipes = RecipeService(items)
+            val health = HealthPenaltyService(config, store)
+            val scoreboard = plugin.server.servicesManager.load(ScoreboardService::class.java)
+                ?: throw IllegalStateException("EpochCommon 计分板服务不可用")
+            val rebirthHud = RebirthHud(plugin, scoreboard, store, config, language)
+            hud = rebirthHud
+            activeHud = rebirthHud
+            val recipes = RecipeService()
             val menu = PriorityMenu(store, config, items, language)
+            val healing = HealingService(plugin, store, health, items, language)
 
             val manager = plugin.server.pluginManager
             val bridge = SlimefunBridge(plugin, plugin.logger, items, language, recipes.all())
             bridge.registerAll()
             manager.registerEvents(bridge, plugin)
-            val deathHandler = DeathHandler(plugin, config, store, economy, hud, language)
+            val deathHandler = DeathHandler(plugin, config, store, health, economy, rebirthHud, language)
             manager.registerEvents(deathHandler, plugin)
-            manager.registerEvents(TotemListener(config, store, items, hud, language), plugin)
+            manager.registerEvents(TotemListener(config, store, items, rebirthHud, language), plugin)
             manager.registerEvents(SoulListener(config, items, keys, language), plugin)
             manager.registerEvents(ItemGuardListener(items, language), plugin)
-            manager.registerEvents(hud, plugin)
             manager.registerEvents(menu, plugin)
+            manager.registerEvents(healing, plugin)
+            manager.registerEvents(FirstJoinGiftListener(store, rebirthHud, language), plugin)
+            healing.start()
 
             val command = plugin.getCommand("erb")
                 ?: throw IllegalStateException("erb 命令缺失（Slimefun plugin.yml）")
-            val executor = RebirthCommand(menu, store, config, hud, items, language, deathHandler) {
+            val executor = RebirthCommand(menu, store, config, rebirthHud, items, language, deathHandler) {
                 language.reload()
-                config.reload()
+                val reloaded = config.reload()
+                rebirthHud.refreshAll()
+                reloaded
             }
             command.setExecutor(executor)
             command.tabCompleter = executor
 
-            hud.refreshAll()
+            rebirthHud.refreshAll()
             plugin.logger.info(
                 "EpochRebirth 已集成，服务端版本：${VersionUtil.serverVersion(plugin.server)}，合成表 ${recipes.all().size} 个"
             )
         } catch (exception: Exception) {
+            hud?.disable()
+            activeHud = null
             plugin.logger.log(Level.SEVERE, "EpochRebirth 集成初始化失败", exception)
         }
+    }
+
+    @JvmStatic
+    fun shutdown() {
+        activeHud?.disable()
+        activeHud = null
     }
 }

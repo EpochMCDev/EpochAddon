@@ -1,5 +1,6 @@
 package io.github.thebusybiscuit.slimefun4.epochrebirth.soul
 
+import com.destroystokyo.paper.event.player.PlayerLaunchProjectileEvent
 import io.github.thebusybiscuit.slimefun4.epochrebirth.config.LanguageService
 import io.github.thebusybiscuit.slimefun4.epochrebirth.config.RebirthConfig
 import io.github.thebusybiscuit.slimefun4.epochrebirth.item.PdcKeys
@@ -12,7 +13,10 @@ import org.bukkit.Registry
 import org.bukkit.Sound
 import org.bukkit.entity.AreaEffectCloud
 import org.bukkit.entity.Player
+import org.bukkit.entity.ThrownExpBottle
+import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.entity.EntityDeathEvent
@@ -21,7 +25,6 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
-import kotlin.math.sqrt
 
 class SoulListener(
     private val config: RebirthConfig,
@@ -66,52 +69,47 @@ class SoulListener(
         cloud.persistentDataContainer.set(keys.soulCloud, PersistentDataType.BYTE, 1)
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun onInteractAtEntity(event: PlayerInteractAtEntityEvent) {
         val cloud = event.rightClicked as? AreaEffectCloud ?: return
         val player = event.player
-        // 主手或副手持有缚魂瓶均可捕获；副手瓶装魂同样拦截，防止被投掷
-        val captured = if (event.hand == EquipmentSlot.OFF_HAND) {
-            capture(player, cloud, EquipmentSlot.OFF_HAND)
-        } else {
-            capture(player, cloud, EquipmentSlot.HAND)
-        }
-        if (captured) {
+        val hand = event.hand
+        if (capture(player, cloud, hand)) {
             event.isCancelled = true
-        } else if (items.identityOf(player.inventory.itemInOffHand) != null) {
+        } else if (items.identityOf(itemInHand(player, hand)) in setOf(RebirthItem.SOUL_BOTTLE, RebirthItem.SOUL)) {
             event.isCancelled = true
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun onInteract(event: PlayerInteractEvent) {
         if (event.action != Action.RIGHT_CLICK_AIR && event.action != Action.RIGHT_CLICK_BLOCK) return
         val player = event.player
-        val mainHand = player.inventory.itemInMainHand
-        val offHand = player.inventory.itemInOffHand
-
-        when (items.identityOf(mainHand)) {
+        val hand = event.hand ?: return
+        when (items.identityOf(itemInHand(player, hand))) {
             RebirthItem.SOUL_BOTTLE -> {
-                // 手持缚魂瓶：尝试捕获灵魂；无论是否捕获到都取消事件，防止瓶子被投掷丢失
-                captureNearby(player, EquipmentSlot.HAND)
+                captureNearby(player, hand)
                 event.isCancelled = true
+                event.setUseItemInHand(Event.Result.DENY)
             }
-            RebirthItem.SOUL -> event.isCancelled = true // 防止瓶装魂被投掷丢失
+            RebirthItem.SOUL -> {
+                event.isCancelled = true
+                event.setUseItemInHand(Event.Result.DENY)
+            }
             else -> {}
         }
+    }
 
-        // 副手持缚魂瓶/瓶装魂右键会被原版当经验瓶投掷，必须拦截；
-        // 仅当投掷动作来自副手（event.hand == OFF_HAND）时处理，避免影响主手正常交互
-        if (event.hand == EquipmentSlot.OFF_HAND) {
-            when (items.identityOf(offHand)) {
-                RebirthItem.SOUL_BOTTLE -> {
-                    captureNearby(player, EquipmentSlot.OFF_HAND)
-                    event.isCancelled = true
-                }
-                RebirthItem.SOUL -> event.isCancelled = true
-                else -> {}
-            }
-        }
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun onProjectileLaunch(event: PlayerLaunchProjectileEvent) {
+        val projectile = event.projectile as? ThrownExpBottle ?: return
+        val isSoulBottle = items.identityOf(event.itemStack) == RebirthItem.SOUL_BOTTLE ||
+            items.identityOf(projectile.item) == RebirthItem.SOUL_BOTTLE
+        if (!isSoulBottle) return
+
+        event.isCancelled = true
+        event.setShouldConsume(false)
+        projectile.remove()
     }
 
     private fun captureNearby(player: Player, hand: EquipmentSlot = EquipmentSlot.HAND) {
@@ -128,7 +126,7 @@ class SoulListener(
     /** 尝试用指定手的缚魂瓶捕获灵魂。成功返回 true。 */
     private fun capture(player: Player, cloud: AreaEffectCloud, hand: EquipmentSlot = EquipmentSlot.HAND): Boolean {
         val inventory = player.inventory
-        val handStack = if (hand == EquipmentSlot.HAND) inventory.itemInMainHand else inventory.itemInOffHand
+        val handStack = itemInHand(player, hand)
         if (items.identityOf(handStack) != RebirthItem.SOUL_BOTTLE) return false
 
         cloud.remove()
@@ -141,8 +139,15 @@ class SoulListener(
                 .values
                 .forEach { player.world.dropItem(player.location, it) }
         }
-        player.playSound(player.location, soulSpeedSound, 1f, 1f)
+        player.playSound(player.location, soulSpeedSound, SOUL_CAPTURE_VOLUME, 1f)
         player.sendMessage(language.component("messages.soul-captured"))
         return true
+    }
+
+    private fun itemInHand(player: Player, hand: EquipmentSlot): ItemStack =
+        if (hand == EquipmentSlot.OFF_HAND) player.inventory.itemInOffHand else player.inventory.itemInMainHand
+
+    private companion object {
+        private const val SOUL_CAPTURE_VOLUME = 4f
     }
 }

@@ -7,7 +7,7 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
 /** 合成表常量（原 config.yml recipes 内容） */
-class RecipeService(private val items: RebirthItems) {
+class RecipeService {
 
     private val recipes: List<RebirthRecipe> = listOf(
         recipe("soul-bottle", listOf("TTT", "TBT", "TTT"), mapOf('T' to IngredientSpec.Material(Material.TORCH), 'B' to IngredientSpec.Material(Material.GLASS_BOTTLE)), RebirthItem.SOUL_BOTTLE, 1),
@@ -33,20 +33,39 @@ class RecipeService(private val items: RebirthItems) {
             'A' to IngredientSpec.Material(Material.GOLDEN_APPLE),
             'C' to IngredientSpec.Custom(RebirthItem.CORE_ADVANCED)
         ), RebirthItem.CORE_ULTIMATE, 1),
-        recipe("basic-totem", listOf("DDD", "DCD", "DDD"), mapOf(
-            'D' to IngredientSpec.Material(Material.DIRT),
+        recipe("basic-totem", listOf("III", "ICI", "IBI"), mapOf(
+            'I' to IngredientSpec.Material(Material.COPPER_INGOT),
+            'B' to IngredientSpec.Material(Material.COPPER_BLOCK),
             'C' to IngredientSpec.Custom(RebirthItem.CORE_BASIC)
         ), RebirthItem.TOTEM_BASIC, 1),
-        recipe("advanced-totem", listOf("HHH", "PCP", "PPP"), mapOf(
-            'H' to IngredientSpec.Material(Material.OAK_SLAB),
-            'P' to IngredientSpec.Material(Material.OAK_PLANKS),
+        recipe("advanced-totem", listOf("III", "ICI", "IBI"), mapOf(
+            'I' to IngredientSpec.Material(Material.IRON_INGOT),
+            'B' to IngredientSpec.Material(Material.IRON_BLOCK),
             'C' to IngredientSpec.Custom(RebirthItem.CORE_ADVANCED)
         ), RebirthItem.TOTEM_ADVANCED, 1),
-        recipe("ultimate-totem", listOf("HHH", "SCS", "SSS"), mapOf(
-            'H' to IngredientSpec.Material(Material.STONE_BRICK_SLAB),
-            'S' to IngredientSpec.Material(Material.STONE_BRICKS),
+        recipe("ultimate-totem", listOf("III", "ICI", "IBI"), mapOf(
+            'I' to IngredientSpec.Material(Material.GOLD_INGOT),
+            'B' to IngredientSpec.Material(Material.GOLD_BLOCK),
             'C' to IngredientSpec.Custom(RebirthItem.CORE_ULTIMATE)
-        ), RebirthItem.TOTEM_ULTIMATE, 1)
+        ), RebirthItem.TOTEM_ULTIMATE, 1),
+        recipe("healing-core", listOf("MGM", "GAG", "MGM"), mapOf(
+            'M' to IngredientSpec.Custom(RebirthItem.MEAT),
+            'G' to IngredientSpec.Material(Material.GLISTERING_MELON_SLICE),
+            'A' to IngredientSpec.Material(Material.ARROW)
+        ), RebirthItem.HEALING_CORE, 1),
+        recipe("healing-arrow-i", listOf("MMG", "MCM", "BMM"), mapOf(
+            'M' to IngredientSpec.Custom(RebirthItem.MEAT),
+            'G' to IngredientSpec.Material(Material.GOLD_BLOCK),
+            'B' to IngredientSpec.Material(Material.MELON),
+            'C' to IngredientSpec.Custom(RebirthItem.HEALING_CORE)
+        ), RebirthItem.HEALING_ARROW_I, 1),
+        recipe("healing-arrow-ii", listOf("GTG", "SCS", "MTM"), mapOf(
+            'G' to IngredientSpec.Material(Material.GOLD_BLOCK),
+            'T' to IngredientSpec.Material(Material.GHAST_TEAR),
+            'S' to IngredientSpec.Material(Material.GLISTERING_MELON_SLICE),
+            'M' to IngredientSpec.Material(Material.MELON),
+            'C' to IngredientSpec.Custom(RebirthItem.HEALING_ARROW_I)
+        ), RebirthItem.HEALING_ARROW_II, 1)
     )
 
     fun all(): List<RebirthRecipe> = recipes
@@ -128,6 +147,11 @@ class RebirthRecipe(
             }
         }
         return true
+    }
+
+    fun ingredientAt(row: Int, column: Int): IngredientSpec? {
+        val char = normalized.getOrNull(row)?.getOrNull(column) ?: return null
+        return if (char == ' ') null else specs[char]
     }
 
     private fun isFilled(stack: ItemStack?): Boolean = stack != null && !stack.type.isAir

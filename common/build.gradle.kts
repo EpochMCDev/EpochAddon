@@ -14,7 +14,10 @@ dependencies {
 }
 
 tasks.jar {
-    enabled = false
+    archiveClassifier.set("plain")
+    manifest {
+        attributes["Automatic-Module-Name"] = "com.epochaddon.common"
+    }
 }
 
 tasks.shadowJar {
