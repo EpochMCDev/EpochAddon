@@ -54,10 +54,12 @@ data class PluginMessages(
 )
 
 data class ScoreboardMessages(
-    val sectionTitle: String,
-    val pointsLine: String,
-    val remainingLine: String,
-    val statusLine: String,
+    val nextRewardLine: String,
+    val remainingPointsLine: String,
+    val rewardSeparator: String,
+    val boostLine: String,
+    val timedBoostDuration: String,
+    val regionBoostDuration: String,
 )
 
 data class MiningSettings(
@@ -161,14 +163,24 @@ data class MiningSettings(
                         ?: DEFAULT_NO_PERMISSION,
                 ),
                 scoreboardMessages = ScoreboardMessages(
-                    sectionTitle = config.getString("scoreboard.section-title", DEFAULT_SCOREBOARD_SECTION_TITLE)
-                        ?: DEFAULT_SCOREBOARD_SECTION_TITLE,
-                    pointsLine = config.getString("scoreboard.points-line", DEFAULT_SCOREBOARD_POINTS_LINE)
-                        ?: DEFAULT_SCOREBOARD_POINTS_LINE,
-                    remainingLine = config.getString("scoreboard.remaining-line", DEFAULT_SCOREBOARD_REMAINING_LINE)
-                        ?: DEFAULT_SCOREBOARD_REMAINING_LINE,
-                    statusLine = config.getString("scoreboard.status-line", DEFAULT_SCOREBOARD_STATUS_LINE)
-                        ?: DEFAULT_SCOREBOARD_STATUS_LINE,
+                    nextRewardLine = config.getString("scoreboard.next-reward-line", DEFAULT_NEXT_REWARD_LINE)
+                        ?: DEFAULT_NEXT_REWARD_LINE,
+                    remainingPointsLine = config.getString(
+                        "scoreboard.remaining-points-line",
+                        DEFAULT_REMAINING_POINTS_LINE,
+                    ) ?: DEFAULT_REMAINING_POINTS_LINE,
+                    rewardSeparator = config.getString("scoreboard.reward-separator", DEFAULT_REWARD_SEPARATOR)
+                        ?: DEFAULT_REWARD_SEPARATOR,
+                    boostLine = config.getString("scoreboard.boost-line", DEFAULT_BOOST_LINE)
+                        ?: DEFAULT_BOOST_LINE,
+                    timedBoostDuration = config.getString(
+                        "scoreboard.timed-boost-duration",
+                        DEFAULT_TIMED_BOOST_DURATION,
+                    ) ?: DEFAULT_TIMED_BOOST_DURATION,
+                    regionBoostDuration = config.getString(
+                        "scoreboard.region-boost-duration",
+                        DEFAULT_REGION_BOOST_DURATION,
+                    ) ?: DEFAULT_REGION_BOOST_DURATION,
                 ),
             )
         }
@@ -280,12 +292,13 @@ data class MiningSettings(
             else -> id
         }
 
-        private const val DEFAULT_SCOREBOARD_SECTION_TITLE = "<gold><bold>矿物资源</bold></gold>"
-        private const val DEFAULT_SCOREBOARD_POINTS_LINE = "<gray>总积分 <white>{points}</white>"
-        private const val DEFAULT_SCOREBOARD_REMAINING_LINE =
-            "<gray>{name} <white>{remaining}</white></gray>"
-        private const val DEFAULT_SCOREBOARD_STATUS_LINE =
-            "<yellow>倍数 x{base}{bonus}{duration}</yellow>"
+        private const val DEFAULT_NEXT_REWARD_LINE = "<gray>下次掉落 <white>{reward}</white></gray>"
+        private const val DEFAULT_REMAINING_POINTS_LINE = "<gray>还需积分 <yellow>{remaining}</yellow></gray>"
+        private const val DEFAULT_REWARD_SEPARATOR = "<dark_gray> + </dark_gray>"
+        private const val DEFAULT_BOOST_LINE =
+            "<yellow>挖矿增益 <gold>x{multiplier}</gold>{duration}</yellow>"
+        private const val DEFAULT_TIMED_BOOST_DURATION = " <gray>剩余 {seconds}s</gray>"
+        private const val DEFAULT_REGION_BOOST_DURATION = " <gray>特殊矿区</gray>"
         private const val DEFAULT_VEIN_EXTENDED =
             "<gold><bold>找到矿脉！</bold></gold> <yellow>挖矿积分加成延长 {seconds} 秒。</yellow>"
         private const val DEFAULT_LEADERBOARD_HEADER =

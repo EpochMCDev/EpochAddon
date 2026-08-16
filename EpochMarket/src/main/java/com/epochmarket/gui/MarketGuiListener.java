@@ -1,5 +1,6 @@
 package com.epochmarket.gui;
 
+import com.epochmarket.config.SoundService;
 import com.epochmarket.model.Market;
 import com.epochmarket.model.MarketEntry;
 import com.epochmarket.service.SaleResult;
@@ -20,11 +21,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class MarketGuiListener implements Listener {
     private final MarketGuiService gui;
     private final SaleService sales;
+    private final SoundService sounds;
     private final Set<UUID> selling = ConcurrentHashMap.newKeySet();
 
-    public MarketGuiListener(MarketGuiService gui, SaleService sales) {
+    public MarketGuiListener(MarketGuiService gui, SaleService sales, SoundService sounds) {
         this.gui = gui;
         this.sales = sales;
+        this.sounds = sounds;
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -99,12 +102,30 @@ public final class MarketGuiListener implements Listener {
         }
         int amount = holder.amount();
         switch (slot) {
-            case 20 -> gui.openConfirmView(player, market, entry, amount + 1, availability(holder));
-            case 21 -> gui.openConfirmView(player, market, entry, amount + 16, availability(holder));
-            case 22 -> gui.openConfirmView(player, market, entry, amount + 64, availability(holder));
-            case 24 -> gui.openConfirmView(player, market, entry, amount - 1, availability(holder));
-            case 25 -> gui.openConfirmView(player, market, entry, amount - 16, availability(holder));
-            case 26 -> gui.openConfirmView(player, market, entry, amount - 64, availability(holder));
+            case 20 -> {
+                sounds.play(player, SoundService.Trigger.ADD);
+                gui.openConfirmView(player, market, entry, amount + 1, availability(holder));
+            }
+            case 21 -> {
+                sounds.play(player, SoundService.Trigger.ADD);
+                gui.openConfirmView(player, market, entry, amount + 16, availability(holder));
+            }
+            case 22 -> {
+                sounds.play(player, SoundService.Trigger.ADD);
+                gui.openConfirmView(player, market, entry, amount + 64, availability(holder));
+            }
+            case 24 -> {
+                sounds.play(player, SoundService.Trigger.SUBTRACT);
+                gui.openConfirmView(player, market, entry, amount - 1, availability(holder));
+            }
+            case 25 -> {
+                sounds.play(player, SoundService.Trigger.SUBTRACT);
+                gui.openConfirmView(player, market, entry, amount - 16, availability(holder));
+            }
+            case 26 -> {
+                sounds.play(player, SoundService.Trigger.SUBTRACT);
+                gui.openConfirmView(player, market, entry, amount - 64, availability(holder));
+            }
             case 29 -> gui.openConfirmView(player, market, entry, availability(holder).maximum(), availability(holder));
             case 31 -> sell(player, holder, market, entry);
             case 33 -> gui.openMarket(player, holder.marketId());
@@ -120,6 +141,7 @@ public final class MarketGuiListener implements Listener {
         sales.sell(player, market, entry, holder.amount(), result -> {
             switch (result.status()) {
                 case SUCCESS -> {
+                    sounds.play(player, SoundService.Trigger.SUCCESS);
                     gui.message(player, "messages.sold", Map.of(
                             "amount", String.valueOf(result.amount()),
                             "item", entry.itemId(),
@@ -127,12 +149,18 @@ public final class MarketGuiListener implements Listener {
                     ));
                     gui.openMarket(player, holder.marketId());
                 }
-                case UNAVAILABLE -> gui.message(player, "messages.unavailable", Map.of());
-                case NO_ITEMS -> gui.message(player, "messages.no-items", Map.of());
-                case NO_QUOTA -> gui.message(player, "messages.no-quota", Map.of());
-                case STORAGE_FAILURE -> gui.message(player, "messages.storage-failed", Map.of());
-                case PAYOUT_FAILURE -> gui.message(player, "messages.payout-failed", Map.of());
-                case INVALID_AMOUNT, CHANGED -> gui.message(player, "messages.changed", Map.of());
+                case UNAVAILABLE, NO_ITEMS, NO_QUOTA, STORAGE_FAILURE, PAYOUT_FAILURE, INVALID_AMOUNT, CHANGED -> {
+                    sounds.play(player, SoundService.Trigger.FAILURE);
+                    String key = switch (result.status()) {
+                        case UNAVAILABLE -> "messages.unavailable";
+                        case NO_ITEMS -> "messages.no-items";
+                        case NO_QUOTA -> "messages.no-quota";
+                        case STORAGE_FAILURE -> "messages.storage-failed";
+                        case PAYOUT_FAILURE -> "messages.payout-failed";
+                        default -> "messages.changed";
+                    };
+                    gui.message(player, key, Map.of());
+                }
             }
             selling.remove(player.getUniqueId());
         });

@@ -77,10 +77,16 @@ storage:
   autosave-seconds: 300
 
 scoreboard:
-  section-title: '<gold><bold>矿物资源</bold></gold>'
-  points-line: '<gray>总积分 <white>{points}</white>'
-  remaining-line: '<gray>{name} <white>{remaining}</white></gray>'
-  status-line: '<yellow>倍数 x{base}{bonus}{duration}</yellow>'
+  # 只显示距离玩家最近的一次矿物掉落。支持 MiniMessage 格式。
+  # 同一积分点会掉落多个矿物时，{reward} 会包含全部矿物名称。
+  next-reward-line: '<gray>下次掉落 <white>{reward}</white></gray>'
+  remaining-points-line: '<gray>还需积分 <yellow>{remaining}</yellow></gray>'
+  reward-separator: '<dark_gray> + </dark_gray>'
+  # boost-line 在没有任何有效增益时自动隐藏。
+  # 可用占位符：{multiplier}、{duration}、{seconds}。
+  boost-line: '<yellow>挖矿增益 <gold>x{multiplier}</gold>{duration}</yellow>'
+  timed-boost-duration: ' <gray>剩余 {seconds}s</gray>'
+  region-boost-duration: ' <gray>特殊矿区</gray>'
 
 # 消息使用 MiniMessage 格式。
 messages:

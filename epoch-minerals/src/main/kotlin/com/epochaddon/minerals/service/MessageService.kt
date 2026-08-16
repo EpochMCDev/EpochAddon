@@ -14,7 +14,6 @@ class MessageService(private val messages: PluginMessages) {
     private val miniMessage = MiniMessage.miniMessage()
     private val plainNumberFormat = DecimalFormat("0.##", DecimalFormatSymbols.getInstance(Locale.ROOT))
     private val compactNumberFormat = DecimalFormat("0.0", DecimalFormatSymbols.getInstance(Locale.ROOT))
-    private val decimalNumberFormat = DecimalFormat("0.0#", DecimalFormatSymbols.getInstance(Locale.ROOT))
 
     fun showVeinStart(player: Player, durationSeconds: Long, multiplier: Double) {
         sendMessage(
@@ -137,7 +136,7 @@ class MessageService(private val messages: PluginMessages) {
         }
     }
 
-    fun formatDecimal(value: Double): String = decimalNumberFormat.format(value)
+    fun formatMultiplier(value: Double): String = plainNumberFormat.format(value)
 
     companion object {
         private const val THOUSAND = 1_000.0

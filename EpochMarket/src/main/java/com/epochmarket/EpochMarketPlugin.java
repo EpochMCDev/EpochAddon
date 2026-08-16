@@ -3,6 +3,7 @@ package com.epochmarket;
 import com.epochmarket.command.EpochMarketCommand;
 import com.epochmarket.config.LanguageService;
 import com.epochmarket.config.MarketConfigService;
+import com.epochmarket.config.SoundService;
 import com.epochmarket.gui.MarketGuiListener;
 import com.epochmarket.gui.MarketGuiService;
 import com.epochmarket.integration.ReflectiveItemMatcher;
@@ -24,6 +25,7 @@ public final class EpochMarketPlugin extends JavaPlugin {
     private QuotaRepository quotas;
     private LanguageService language;
     private MarketConfigService markets;
+    private SoundService sounds;
     private ZoneId resetZone;
 
     @Override
@@ -52,6 +54,7 @@ public final class EpochMarketPlugin extends JavaPlugin {
             }
             language = new LanguageService(new File(getDataFolder(), "lang"), getLogger());
             markets = new MarketConfigService(new File(getDataFolder(), "markets"), getLogger());
+            sounds = new SoundService(getLogger());
             if (!reloadServices()) {
                 throw new IllegalStateException("Initial configuration load failed");
             }
@@ -67,8 +70,8 @@ public final class EpochMarketPlugin extends JavaPlugin {
         Clock clock = Clock.system(resetZone);
         InventoryService inventory = new InventoryService(matcher);
         SaleService sales = new SaleService(this, quotas, matcher, inventory, economy, clock);
-        MarketGuiService gui = new MarketGuiService(this, markets, language, matcher, sales);
-        Bukkit.getPluginManager().registerEvents(new MarketGuiListener(gui, sales), this);
+        MarketGuiService gui = new MarketGuiService(this, markets, language, matcher, sales, sounds);
+        Bukkit.getPluginManager().registerEvents(new MarketGuiListener(gui, sales, sounds), this);
 
         EpochMarketCommand executor = new EpochMarketCommand(this, gui, quotas, sales, language, clock, this::reloadServices);
         PluginCommand command = getCommand("epochmarket");
@@ -90,6 +93,7 @@ public final class EpochMarketPlugin extends JavaPlugin {
             reloadConfig();
             language.reload(getConfig().getString("default-language", "zh_CN"));
             markets.reload();
+            sounds.reload(getConfig().getConfigurationSection("sounds"));
             Bukkit.getOnlinePlayers().forEach(player -> {
                 if (player.getOpenInventory().getTopInventory().getHolder(false) instanceof com.epochmarket.gui.SelectorHolder
                         || player.getOpenInventory().getTopInventory().getHolder(false) instanceof com.epochmarket.gui.MarketHolder

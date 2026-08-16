@@ -67,7 +67,7 @@ class LanguageService(private val plugin: Slimefun) {
         "items.healing_core.lore" to "<gray>合成治愈之箭的材料",
         "items.healing_arrow_i.name" to "<green><i:false>治愈之箭 I",
         "items.healing_arrow_i.lore" to "<gray>右键使用：受到 2 点伤害",
-        "items.healing_arrow_i.lore2" to "<gray>每 36 秒恢复 1 颗心生命上限，共 5 次",
+        "items.healing_arrow_i.lore2" to "<gray>每 60 秒恢复 1 颗心生命上限，共 5 次",
         "items.healing_arrow_i.lore3" to "<gray>生命上限已满时暂停并储存剩余时间",
         "items.healing_arrow_ii.name" to "<aqua><i:false>治愈之箭 II",
         "items.healing_arrow_ii.lore" to "<gray>右键使用：受到 2 点伤害",

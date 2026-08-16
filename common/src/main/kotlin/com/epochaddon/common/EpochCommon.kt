@@ -4,9 +4,8 @@ import com.epochaddon.common.command.ScoreboardCommand
 import com.epochaddon.common.listener.JoinListener
 import com.epochaddon.common.scoreboard.EpochScoreboardService
 import com.epochaddon.common.scoreboard.ScoreboardService
+import com.epochaddon.common.scoreboard.ScoreboardSettings
 import com.epochaddon.common.util.VersionUtil
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.plugin.ServicePriority
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.logging.Level
@@ -21,12 +20,7 @@ class EpochCommon : JavaPlugin() {
 
         scoreboardService = EpochScoreboardService(
             plugin = this,
-            defaultEnabled = config.getBoolean(
-                "scoreboard.default-enabled",
-                config.getBoolean("scoreboard.enabled", true),
-            ),
-            title = scoreboardTitle(),
-            refreshTicks = config.getLong("scoreboard.refresh-ticks", 20L).coerceAtLeast(1L),
+            initialSettings = ScoreboardSettings.load(config, logger),
         )
         server.servicesManager.register(
             ScoreboardService::class.java,
@@ -38,7 +32,11 @@ class EpochCommon : JavaPlugin() {
 
         val scoreboardCommand = getCommand(SCOREBOARD_COMMAND)
             ?: throw IllegalStateException("plugin.yml 缺少 $SCOREBOARD_COMMAND 指令")
-        val commandExecutor = ScoreboardCommand(scoreboardService)
+        val commandExecutor = ScoreboardCommand(
+            scoreboardService,
+            ::reloadScoreboard,
+            scoreboardService::providerStatusLines,
+        )
         scoreboardCommand.setExecutor(commandExecutor)
         scoreboardCommand.tabCompleter = commandExecutor
 
@@ -53,18 +51,18 @@ class EpochCommon : JavaPlugin() {
         logger.info("EpochCommon 已禁用")
     }
 
-    private fun scoreboardTitle(): Component {
-        val configured = config.getString("scoreboard.title", DEFAULT_SCOREBOARD_TITLE) ?: DEFAULT_SCOREBOARD_TITLE
+    private fun reloadScoreboard(): Boolean {
         return try {
-            MiniMessage.miniMessage().deserialize(configured)
+            reloadConfig()
+            scoreboardService.updateSettings(ScoreboardSettings.load(config, logger))
+            true
         } catch (exception: Exception) {
-            logger.log(Level.WARNING, "计分板标题 MiniMessage 格式无效，使用默认标题", exception)
-            MiniMessage.miniMessage().deserialize(DEFAULT_SCOREBOARD_TITLE)
+            logger.log(Level.SEVERE, "统一计分板配置重载失败", exception)
+            false
         }
     }
 
     companion object {
-        private const val DEFAULT_SCOREBOARD_TITLE = "<dark_red>☠ <red>EpochMC"
         private const val SCOREBOARD_COMMAND = "esb"
     }
 }

@@ -2,6 +2,7 @@ package com.epochmarket.gui;
 
 import com.epochmarket.config.LanguageService;
 import com.epochmarket.config.MarketConfigService;
+import com.epochmarket.config.SoundService;
 import com.epochmarket.integration.ItemMatcher;
 import com.epochmarket.model.Market;
 import com.epochmarket.model.MarketEntry;
@@ -34,16 +35,18 @@ public final class MarketGuiService {
     private final LanguageService language;
     private final ItemMatcher matcher;
     private final SaleService sales;
+    private final SoundService sounds;
     private final Plugin plugin;
     private final DecimalFormat moneyFormat = new DecimalFormat("#,##0.00");
 
     public MarketGuiService(Plugin plugin, MarketConfigService markets, LanguageService language, ItemMatcher matcher,
-                            SaleService sales) {
+                            SaleService sales, SoundService sounds) {
         this.plugin = plugin;
         this.markets = markets;
         this.language = language;
         this.matcher = matcher;
         this.sales = sales;
+        this.sounds = sounds;
     }
 
     public void openSelector(Player player) {
@@ -122,11 +125,13 @@ public final class MarketGuiService {
                 return;
             }
             if (error != null) {
+                sounds.play(player, SoundService.Trigger.FAILURE);
                 message(player, "messages.storage-failed", Map.of());
                 openMarket(player, marketId);
                 return;
             }
             if (availability.maximum() <= 0) {
+                sounds.play(player, SoundService.Trigger.FAILURE);
                 message(player, availability.remaining() <= 0 ? "messages.no-quota" : "messages.no-items", Map.of());
                 openMarket(player, marketId);
                 return;

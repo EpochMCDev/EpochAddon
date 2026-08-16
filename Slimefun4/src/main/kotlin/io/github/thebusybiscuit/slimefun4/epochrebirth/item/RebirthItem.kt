@@ -25,7 +25,7 @@ enum class HealingTier(
     val intervalSeconds: Int,
     val recoveries: Int = 5
 ) {
-    I("i", RebirthItem.HEALING_ARROW_I, 36),
+    I("i", RebirthItem.HEALING_ARROW_I, 60),
     II("ii", RebirthItem.HEALING_ARROW_II, 30);
 
     val durationSeconds: Int

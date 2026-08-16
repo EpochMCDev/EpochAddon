@@ -20,5 +20,10 @@ out/
 /粘液科技材质包/
 /粘液科技材质包-*.zip
 
+# Local archives and reference attachments
+/*.zip
+/图片和附件/
+/EpochMC更新策划.md
+
 # Local tooling config
 reasonix.toml

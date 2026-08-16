@@ -20,6 +20,8 @@ dependencies {
 
     implementation("org.xerial:sqlite-jdbc:3.47.2.0")
 
+    testImplementation("io.papermc.paper:paper-api:${providers.gradleProperty("apiVersion").get()}.build.+")
+
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

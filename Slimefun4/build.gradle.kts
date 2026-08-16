@@ -96,7 +96,11 @@ sourceSets.main {
     // shadowJar 会排除这些类，运行时由硬依赖 EpochCommon 提供。
     kotlin.srcDir("../common/src/main/kotlin/com/epochaddon/common/scoreboard")
     kotlin.srcDir("../common/src/main/kotlin/com/epochaddon/common/util")
-    kotlin.exclude("**/EpochScoreboardService.kt")
+    kotlin.exclude(
+        "**/EpochScoreboardService.kt",
+        "**/ScoreboardLayout.kt",
+        "**/ScoreboardSettings.kt",
+    )
 }
 
 tasks.test {

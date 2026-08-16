@@ -1,7 +1,89 @@
 scoreboard:
-  # 新玩家默认开启；玩家可使用 /esb 单独修改自己的状态。
+  # 新玩家默认状态。玩家可以使用 /esb on|off|toggle 修改自己的状态。
   default-enabled: true
-  title: '<dark_red>☠ <red>EpochMC'
-  # 检查并重新接管被其他插件替换的侧边栏。20 tick = 1 秒。
-  # 业务模块的数据变更会立即请求刷新，不依赖这个周期。
+  # 将玩家选择写入 PDC，服务器重启后仍然保留。
+  persist-player-preferences: true
+
+  # 支持 MiniMessage、PlaceholderAPI 的 %变量%、下方定义的静态占位符，
+  # 以及这些动态占位符：{player}、{world}、{online}、{max_players}、
+  # {date}、{balance}、{balance_raw}、{balance_vault}、
+  # {country}/{nation}、{town}。
+  title: '<gradient:#3b82f6:#22c55e><bold>EpochMC</bold></gradient>'
+  header-lines:
+    - '<gray>{date}</gray>'
+    - '<green>国家</green> <white>{country}</white>'
+    - '<green>城镇</green> <white>{town}</white>'
+    - '<green>温度</green> <yellow>%rs_temperature%</yellow>'
+    - '<gold>金币</gold> <yellow>{balance}</yellow>'
+    - ''
+  footer-lines:
+    - '<dark_gray>{address}</dark_gray>'
+
+  placeholders:
+    date-format: 'yyyy/MM/dd'
+    time-zone: 'Asia/Shanghai'
+    # {balance} 默认按 K/M/B/T 缩放；{balance_raw} 显示完整值；
+    # {balance_vault} 使用经济插件自己的货币格式。
+    balance-format: '#,##0.##'
+    balance-compact: true
+    balance-suffixes:
+      thousand: 'K'
+      million: 'M'
+      billion: 'B'
+      trillion: 'T'
+    balance-unavailable: '--'
+    # 玩家未加入 Nodes 国家或城镇时显示的文本。
+    affiliation-unavailable: '无'
+    # PlaceholderAPI/对应扩展不可用，或变量没有成功解析时显示的文本。
+    external-unavailable: '--'
+    # 可以添加任意静态占位符，并在标题、页眉、页脚中使用 {键名}。
+    static:
+      address: 'mc.epochearth.cn'
+
+  # Minecraft 侧边栏最多显示 15 行。设置更大的值也会被限制到 15。
+  max-lines: 15
+  hide-when-empty: false
+
+  # force：其他插件替换计分板后重新接管。
+  # yield：检测到其他插件的计分板后暂时让出，回到主计分板时再恢复。
+  ownership-mode: force
+
+  # 周期刷新用于倒计时等动态内容；业务模块也可以主动请求立即刷新。
   refresh-ticks: 20
+
+  separator:
+    enabled: true
+    # 空字符串代表空白分隔行，也可以填写 MiniMessage 文本。
+    line: ''
+
+  # 所有未单独配置的提供器使用这些默认值。
+  provider-defaults:
+    enabled: true
+    max-lines: 15
+    separator-before: true
+    permission: ''
+    # 留空表示全部世界。世界名不区分大小写。
+    worlds: []
+    excluded-worlds: []
+
+  # 路径格式：插件名（小写） -> 提供器 id。
+  # /esb providers 可以查看当前实际注册的配置键。
+  providers:
+    epochminerals:
+      minerals:
+        enabled: true
+        order: 100
+        max-lines: 3
+        separator-before: true
+        permission: ''
+        worlds: []
+        excluded-worlds: []
+    slimefun:
+      rebirth:
+        enabled: true
+        order: 200
+        max-lines: 4
+        separator-before: true
+        permission: ''
+        worlds: []
+        excluded-worlds: []

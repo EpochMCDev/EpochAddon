@@ -1,6 +1,7 @@
 package com.epochaddon.minerals
 
 import com.epochaddon.common.scoreboard.ScoreboardService
+import com.epochaddon.common.scoreboard.ScoreboardProviderOptions
 import com.epochaddon.common.util.VersionUtil
 import com.epochaddon.minerals.command.MiningPointsCommand
 import com.epochaddon.minerals.command.StoneCommand
@@ -43,7 +44,14 @@ class EpochMineralsPlugin : JavaPlugin() {
         scoreboardService.registerProvider(
             this,
             SCOREBOARD_PROVIDER_ID,
-            SCOREBOARD_ORDER,
+            // Avoid a Kotlin DefaultConstructorMarker in this cross-plugin API call.
+            ScoreboardProviderOptions(
+                order = SCOREBOARD_ORDER,
+                enabledByDefault = true,
+                maxLines = SCOREBOARD_MAX_LINES,
+                separatorBefore = true,
+                permission = null,
+            ),
             MineralsScoreboardProvider(settings, progressStore, boostService, veinService, messages),
         )
 
@@ -99,6 +107,7 @@ class EpochMineralsPlugin : JavaPlugin() {
     companion object {
         private const val SCOREBOARD_PROVIDER_ID = "minerals"
         private const val SCOREBOARD_ORDER = 100
+        private const val SCOREBOARD_MAX_LINES = 3
         private const val MINING_POINTS_COMMAND = "miningpoints"
         private const val STONE_COMMAND = "stone"
     }

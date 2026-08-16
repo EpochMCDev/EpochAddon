@@ -9,6 +9,7 @@ import com.epochaddon.minerals.service.PlayerProgressStore
 import com.epochaddon.minerals.service.VeinService
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
+import kotlin.math.abs
 
 class MineralsScoreboardProvider(
     private val settings: MiningSettings,
@@ -21,8 +22,40 @@ class MineralsScoreboardProvider(
     override fun lines(player: Player): List<Component> {
         val totalPoints = progressStore.points(player)
         val templates = settings.scoreboardMessages
-        val boost = boostService.snapshot(player.uniqueId)
-        val vein = veinService.snapshot(player.uniqueId)
+        val upcoming = RewardProgress.next(totalPoints, settings.rewards) ?: return emptyList()
+        val rewardNames = upcoming.rewards.joinToString(templates.rewardSeparator) { it.scoreboardName }
+
+        return buildList {
+            if (templates.nextRewardLine.isNotBlank()) {
+                add(
+                    messages.component(
+                        templates.nextRewardLine,
+                        mapOf("reward" to rewardNames),
+                    ),
+                )
+            }
+            if (templates.remainingPointsLine.isNotBlank()) {
+                add(
+                    messages.component(
+                        templates.remainingPointsLine,
+                        mapOf("remaining" to messages.formatNumber(upcoming.remainingPoints)),
+                    ),
+                )
+            }
+            boostLine(player)?.let { add(it) }
+        }
+    }
+
+    private fun boostLine(player: Player): Component? {
+        val templates = settings.scoreboardMessages
+        if (templates.boostLine.isBlank()) {
+            return null
+        }
+
+        val commandBoost = boostService.snapshot(player.uniqueId)
+        val veinBoost = if (commandBoost == null) veinService.snapshot(player.uniqueId) else null
+        val timedMultiplier = commandBoost?.multiplier ?: veinBoost?.multiplier ?: 1.0
+        val remainingSeconds = commandBoost?.remainingSeconds ?: veinBoost?.remainingSeconds
         val regionMultiplier = if (
             settings.isSpecialRegion(
                 player.world.name,
@@ -35,75 +68,27 @@ class MineralsScoreboardProvider(
         } else {
             1.0
         }
-        val timedMultiplier = boost?.multiplier ?: vein?.multiplier ?: 1.0
         val effectiveMultiplier = regionMultiplier * timedMultiplier
-        val bonusAmount = effectiveMultiplier - 1.0
-        val bonusText = if (kotlin.math.abs(bonusAmount) < 1.0e-9) {
-            ""
-        } else if (bonusAmount > 0.0) {
-            " +${messages.formatDecimal(bonusAmount)}"
+        if (abs(effectiveMultiplier - 1.0) < MULTIPLIER_EPSILON) {
+            return null
+        }
+
+        val duration = if (remainingSeconds != null) {
+            templates.timedBoostDuration.replace("{seconds}", remainingSeconds.toString())
         } else {
-            " ${messages.formatDecimal(bonusAmount)}"
+            templates.regionBoostDuration
         }
-        val durationText = when {
-            boost != null -> " (${boost.remainingSeconds}s)"
-            vein != null -> " (${vein.remainingSeconds}s)"
-            else -> ""
-        }
-
-        return buildList {
-            if (templates.sectionTitle.isNotBlank()) {
-                add(messages.component(templates.sectionTitle))
-            }
-            if (templates.pointsLine.isNotBlank()) {
-                add(
-                    messages.component(
-                        templates.pointsLine,
-                        mapOf("points" to messages.formatNumber(totalPoints)),
-                    ),
-                )
-            }
-            if (templates.remainingLine.isNotBlank()) {
-                settings.rewards.chunked(PROGRESS_SEGMENTS_PER_LINE).forEach { rules ->
-                    add(
-                        joinSegments(
-                            rules.map { rule ->
-                                messages.component(
-                                    templates.remainingLine,
-                                    mapOf(
-                                        "name" to rule.reward.scoreboardName,
-                                        "remaining" to messages.formatNumber(
-                                            RewardProgress.remaining(totalPoints, rule.points),
-                                        ),
-                                    ),
-                                )
-                            },
-                        ),
-                    )
-                }
-            }
-            if (templates.statusLine.isNotBlank()) {
-                add(
-                    messages.component(
-                        templates.statusLine,
-                        mapOf(
-                            "base" to "1",
-                            "bonus" to bonusText,
-                            "duration" to durationText,
-                        ),
-                    ),
-                )
-            }
-        }
-    }
-
-    private fun joinSegments(segments: List<Component>): Component {
-        return segments.drop(1).fold(segments.firstOrNull() ?: Component.empty()) { line, segment ->
-            line.append(Component.text(" ")).append(segment)
-        }
+        return messages.component(
+            templates.boostLine,
+            mapOf(
+                "multiplier" to messages.formatMultiplier(effectiveMultiplier),
+                "duration" to duration,
+                "seconds" to remainingSeconds?.toString().orEmpty(),
+            ),
+        )
     }
 
     companion object {
-        private const val PROGRESS_SEGMENTS_PER_LINE = 3
+        private const val MULTIPLIER_EPSILON = 1.0e-9
     }
 }

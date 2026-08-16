@@ -1,6 +1,6 @@
 package com.epochaddon.common.command
 
-import com.epochaddon.common.scoreboard.EpochScoreboardService
+import com.epochaddon.common.scoreboard.ScoreboardService
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
@@ -9,7 +9,9 @@ import org.bukkit.command.TabExecutor
 import org.bukkit.entity.Player
 
 class ScoreboardCommand(
-    private val scoreboardService: EpochScoreboardService,
+    private val scoreboardService: ScoreboardService,
+    private val reloadAction: () -> Boolean,
+    private val providerStatus: () -> List<String>,
 ) : TabExecutor {
 
     override fun onCommand(
@@ -18,6 +20,31 @@ class ScoreboardCommand(
         label: String,
         args: Array<String>,
     ): Boolean {
+        if (args.size == 1 && args[0].equals("reload", ignoreCase = true)) {
+            if (!sender.hasPermission(PERMISSION)) {
+                sender.sendMessage(Component.text("你没有权限重载统一计分板。"))
+                return true
+            }
+            val reloaded = reloadAction()
+            sender.sendMessage(Component.text(if (reloaded) "统一计分板配置已重载。" else "统一计分板配置重载失败，请检查控制台。"))
+            return true
+        }
+
+        if (args.size == 1 && args[0].equals("providers", ignoreCase = true)) {
+            if (!sender.hasPermission(PERMISSION)) {
+                sender.sendMessage(Component.text("你没有权限查看计分板提供器。"))
+                return true
+            }
+            val providers = providerStatus()
+            sender.sendMessage(Component.text("已注册计分板提供器："))
+            if (providers.isEmpty()) {
+                sender.sendMessage(Component.text("- 无"))
+            } else {
+                providers.forEach { sender.sendMessage(Component.text("- $it")) }
+            }
+            return true
+        }
+
         if (args.isEmpty() || args.size > 2) {
             sendUsage(sender, label)
             return true
@@ -62,6 +89,7 @@ class ScoreboardCommand(
         if (args.size == 1) {
             val values = ACTIONS.toMutableList()
             if (sender.hasPermission(PERMISSION)) {
+                values += ADMIN_ACTIONS
                 values += "@a"
                 values += Bukkit.getOnlinePlayers().map { it.name }
             }
@@ -118,11 +146,19 @@ class ScoreboardCommand(
     }
 
     private fun sendUsage(sender: CommandSender, label: String) {
-        sender.sendMessage(Component.text("用法：/$label <on|off|toggle|status> 或 /$label <玩家|@a> <on|off|toggle|status>"))
+        sender.sendMessage(
+            Component.text(
+                "用法：/$label <on|off|toggle|status> 或 /$label <玩家|@a> <on|off|toggle|status>",
+            ),
+        )
+        if (sender.hasPermission(PERMISSION)) {
+            sender.sendMessage(Component.text("管理：/$label <reload|providers>"))
+        }
     }
 
     companion object {
         private val ACTIONS = listOf("on", "off", "toggle", "status")
+        private val ADMIN_ACTIONS = listOf("reload", "providers")
         private const val PERMISSION = "epochcommon.admin"
     }
 }

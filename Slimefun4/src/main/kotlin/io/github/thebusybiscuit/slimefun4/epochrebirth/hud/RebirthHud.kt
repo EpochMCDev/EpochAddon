@@ -1,6 +1,7 @@
 package io.github.thebusybiscuit.slimefun4.epochrebirth.hud
 
 import com.epochaddon.common.scoreboard.ScoreboardProvider
+import com.epochaddon.common.scoreboard.ScoreboardProviderOptions
 import com.epochaddon.common.scoreboard.ScoreboardService
 import io.github.thebusybiscuit.slimefun4.epochrebirth.config.LanguageService
 import io.github.thebusybiscuit.slimefun4.epochrebirth.config.RebirthConfig
@@ -19,9 +20,21 @@ class RebirthHud(
 ) {
 
     init {
-        scoreboard.registerProvider(plugin, PROVIDER_ID, PROVIDER_ORDER, object : ScoreboardProvider {
-            override fun lines(player: Player): List<Component> = scoreboardLines(player)
-        })
+        scoreboard.registerProvider(
+            plugin,
+            PROVIDER_ID,
+            // Slimefun relocates Kotlin, so cross-plugin constructors must not use default arguments.
+            ScoreboardProviderOptions(
+                order = PROVIDER_ORDER,
+                enabledByDefault = true,
+                maxLines = PROVIDER_MAX_LINES,
+                separatorBefore = true,
+                permission = null,
+            ),
+            object : ScoreboardProvider {
+                override fun lines(player: Player): List<Component> = scoreboardLines(player)
+            },
+        )
     }
 
     fun update(player: Player) {
@@ -53,5 +66,6 @@ class RebirthHud(
     companion object {
         private const val PROVIDER_ID = "rebirth"
         private const val PROVIDER_ORDER = 200
+        private const val PROVIDER_MAX_LINES = 4
     }
 }
