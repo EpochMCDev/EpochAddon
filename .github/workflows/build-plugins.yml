@@ -1,0 +1,146 @@
+name: Build Plugins
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugin:
+        description: Select the plugin to build
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - common
+          - epoch-market
+          - epoch-minerals
+          - slimefun4
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-plugins-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build ${{ inputs.plugin }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SELECTED_PLUGIN: ${{ inputs.plugin }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Remember Java 21 toolchain
+        shell: bash
+        run: echo "JAVA_21_HOME=$JAVA_HOME" >> "$GITHUB_ENV"
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+
+      - name: Configure Gradle toolchains
+        shell: bash
+        run: |
+          printf 'GRADLE_OPTS=%s -Dorg.gradle.java.installations.paths=%s,%s\n' \
+            "${GRADLE_OPTS:-}" "$JAVA_21_HOME" "$JAVA_HOME" >> "$GITHUB_ENV"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build selected plugin
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          case "$SELECTED_PLUGIN" in
+            all)
+              ./gradlew --no-daemon --stacktrace build
+              ;;
+            common)
+              ./gradlew --no-daemon --stacktrace :common:shadowJar
+              ;;
+            epoch-market)
+              ./gradlew --no-daemon --stacktrace :epoch-market:shadowJar
+              ;;
+            epoch-minerals)
+              ./gradlew --no-daemon --stacktrace :common:shadowJar :epoch-minerals:shadowJar
+              ;;
+            slimefun4)
+              ./gradlew --no-daemon --stacktrace :common:shadowJar :Slimefun4:shadowJar
+              ;;
+            *)
+              echo "Unsupported plugin: $SELECTED_PLUGIN" >&2
+              exit 1
+              ;;
+          esac
+
+      - name: Collect plugin jars
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf artifacts
+          mkdir -p artifacts
+
+          copy_jars() {
+            for directory in "$@"; do
+              find "$directory/build/libs" \
+                -maxdepth 1 \
+                -type f \
+                -name '*.jar' \
+                ! -name '*-plain.jar' \
+                ! -name '*-sources.jar' \
+                -exec cp {} artifacts/ \;
+            done
+          }
+
+          case "$SELECTED_PLUGIN" in
+            all)
+              copy_jars common epoch-minerals EpochMarket Slimefun4
+              ;;
+            common)
+              copy_jars common
+              ;;
+            epoch-market)
+              copy_jars EpochMarket
+              ;;
+            epoch-minerals)
+              copy_jars common epoch-minerals
+              ;;
+            slimefun4)
+              copy_jars common Slimefun4
+              ;;
+          esac
+
+          mapfile -t jars < <(find artifacts -maxdepth 1 -type f -name '*.jar' -printf '%f\n' | sort)
+          if (( ${#jars[@]} == 0 )); then
+            echo 'No plugin jars were produced.' >&2
+            exit 1
+          fi
+
+          {
+            echo '## Built plugin jars'
+            for jar in "${jars[@]}"; do
+              printf -- '- `%s`\n' "$jar"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload plugin jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: epochaddon-${{ inputs.plugin }}-${{ github.sha }}
+          path: artifacts/*.jar
+          if-no-files-found: error
+          retention-days: 14
