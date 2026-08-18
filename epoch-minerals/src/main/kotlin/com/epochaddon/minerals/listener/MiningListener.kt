@@ -1,13 +1,12 @@
 package com.epochaddon.minerals.listener
 
 import com.epochaddon.common.scoreboard.ScoreboardService
-import com.epochaddon.skills.api.EpochSkillProfessions
-import com.epochaddon.skills.api.EpochSkillUnlocks
-import com.epochaddon.skills.api.EpochSkillsService
 import com.epochaddon.minerals.config.MineralReward
 import com.epochaddon.minerals.config.MiningSettings
 import com.epochaddon.minerals.domain.RewardGrant
 import com.epochaddon.minerals.domain.ThresholdRewards
+import com.epochaddon.minerals.service.EpochSkillsBridge
+import com.epochaddon.minerals.service.EpochSkillsIds
 import com.epochaddon.minerals.service.MiningBoostService
 import com.epochaddon.minerals.service.PlayerProgressStore
 import com.epochaddon.minerals.service.VeinService
@@ -24,7 +23,7 @@ class MiningListener(
     private val veinService: VeinService,
     private val boostService: MiningBoostService,
     private val scoreboardService: ScoreboardService,
-    private val skillsService: EpochSkillsService,
+    private val skillsService: EpochSkillsBridge?,
 ) : Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -34,7 +33,9 @@ class MiningListener(
         if (block.type !in settings.blocks || player.gameMode !in settings.gameModes) {
             return
         }
-        if (!skillsService.hasUnlock(player, EpochSkillUnlocks.DIGGING_RESOURCE_SYSTEM)) {
+        if (settings.requireResourceSystemUnlock &&
+            skillsService?.hasUnlock(player, EpochSkillsIds.DIGGING_RESOURCE_SYSTEM) != true
+        ) {
             return
         }
 
@@ -56,11 +57,13 @@ class MiningListener(
         val rewards = ThresholdRewards.crossed(progress.previousPoints, progress.currentPoints, settings.rewards)
 
         dropRewards(block.location, rewards)
-        val gainedExperience = rewards.sumOf { grant ->
-            skillsService.sourceExperience(EpochSkillProfessions.DIGGING, grant.reward.id) * grant.amount.toLong()
-        }
-        if (gainedExperience > 0L) {
-            skillsService.addExperience(player, EpochSkillProfessions.DIGGING, gainedExperience)
+        skillsService?.let { service ->
+            val gainedExperience = rewards.sumOf { grant ->
+                service.sourceExperience(EpochSkillsIds.DIGGING_PROFESSION, grant.reward.id) * grant.amount.toLong()
+            }
+            if (gainedExperience > 0L) {
+                service.addExperience(player, EpochSkillsIds.DIGGING_PROFESSION, gainedExperience)
+            }
         }
         scoreboardService.refresh(player)
     }

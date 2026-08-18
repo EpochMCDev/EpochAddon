@@ -10,7 +10,6 @@ base {
 dependencies {
     implementation(kotlin("stdlib"))
     compileOnly(project(":common"))
-    compileOnly(project(":epoch-skills"))
 
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")

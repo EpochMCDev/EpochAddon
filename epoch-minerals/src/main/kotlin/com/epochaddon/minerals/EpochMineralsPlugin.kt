@@ -3,12 +3,13 @@ package com.epochaddon.minerals
 import com.epochaddon.common.scoreboard.ScoreboardService
 import com.epochaddon.common.scoreboard.ScoreboardProviderOptions
 import com.epochaddon.common.util.VersionUtil
-import com.epochaddon.skills.api.EpochSkillsService
 import com.epochaddon.minerals.command.MiningPointsCommand
 import com.epochaddon.minerals.command.StoneCommand
 import com.epochaddon.minerals.config.MiningSettings
 import com.epochaddon.minerals.listener.MiningListener
 import com.epochaddon.minerals.scoreboard.MineralsScoreboardProvider
+import com.epochaddon.minerals.service.EpochSkillsBridge
+import com.epochaddon.minerals.service.EpochSkillsBridgeLoader
 import com.epochaddon.minerals.service.MessageService
 import com.epochaddon.minerals.service.MiningBoostService
 import com.epochaddon.minerals.service.PlayerProgressStore
@@ -21,10 +22,11 @@ class EpochMineralsPlugin : JavaPlugin() {
     private lateinit var veinService: VeinService
     private lateinit var scoreboardService: ScoreboardService
     private lateinit var boostService: MiningBoostService
-    private lateinit var skillsService: EpochSkillsService
+    private var skillsService: EpochSkillsBridge? = null
 
     override fun onEnable() {
         saveDefaultConfig()
+        ensureConfigDefaults()
 
         val settings = MiningSettings.load(this)
         val messages = MessageService(settings.messages)
@@ -41,10 +43,17 @@ class EpochMineralsPlugin : JavaPlugin() {
             server.pluginManager.disablePlugin(this)
             return
         }
-        skillsService = server.servicesManager.load(EpochSkillsService::class.java) ?: run {
-            logger.severe("EpochSkills 服务不可用，EpochMinerals 无法启动")
+        skillsService = EpochSkillsBridgeLoader.load(server, logger)
+        if (settings.requireResourceSystemUnlock && skillsService == null) {
+            logger.severe(
+                "已启用 skills.require-resource-system-unlock，但 EpochSkills 服务不可用；" +
+                    "请安装 EpochSkills，或在 EpochMinerals/config.yml 中关闭该开关",
+            )
             server.pluginManager.disablePlugin(this)
             return
+        }
+        if (skillsService == null) {
+            logger.info("未检测到 EpochSkills；矿物积分与掉落不再受技能树限制")
         }
         boostService = MiningBoostService(this, scoreboardService)
         veinService = VeinService(this, settings.vein, messages, scoreboardService, boostService)
@@ -79,6 +88,14 @@ class EpochMineralsPlugin : JavaPlugin() {
 
         scheduleAutosave(settings.autosaveSeconds)
         logger.info("EpochMinerals 已启用，服务端版本：${VersionUtil.serverVersion(server)}")
+    }
+
+    private fun ensureConfigDefaults() {
+        val resourceUnlockPath = "skills.require-resource-system-unlock"
+        if (!config.isSet(resourceUnlockPath)) {
+            config.set(resourceUnlockPath, false)
+            saveConfig()
+        }
     }
 
     override fun onDisable() {
