@@ -1,0 +1,20 @@
+name: EpochSkills
+version: '${version}'
+main: com.epochaddon.skills.EpochSkillsPlugin
+api-version: '26.2'
+description: Configurable player progression and skill trees for EpochMC.
+authors: [xiaobai]
+
+commands:
+  eskills:
+    description: Open the EpochSkills menu.
+    aliases: [eskill, epochskills]
+    usage: '/eskills [reload|reset <玩家名>]'
+
+permissions:
+  epochskills.use:
+    description: Allows opening EpochSkills.
+    default: true
+  epochskills.admin:
+    description: Allows reloading and administering EpochSkills.
+    default: op

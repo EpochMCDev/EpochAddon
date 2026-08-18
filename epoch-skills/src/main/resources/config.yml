@@ -1,0 +1,63 @@
+config-version: 1
+
+storage:
+  autosave-seconds: 300
+
+bossbar:
+  duration-ticks: 60
+  color: BLUE
+  title: '<gold>{profession}</gold> <gray>({experience} <green>+{gained}</green>)</gray>'
+
+digging:
+  game-modes: [SURVIVAL]
+  mining-speed-bonus: 0.35
+
+# Values are preserved from the current planning document.
+experience-thresholds:
+  1: 30
+  2: 57
+  3: 102
+  4: 173
+  5: 272
+  6: 399
+  7: 542
+  8: 678
+  9: 848
+  10: 2657
+  11: 1326
+  12: 1658
+  13: 2073
+  14: 2592
+  15: 3240
+  16: 4050
+  17: 5063
+  18: 6329
+  19: 7911
+  20: 10000
+
+experience-sources:
+  digging:
+    profession-id: 'gathering.digging'
+    values:
+      coal: 9
+      raw-copper: 13
+      raw-iron: 19
+      quartz: 20
+      raw-gold: 19
+      redstone: 10
+      lapis: 12
+      diamond: 192
+      emerald: 384
+
+messages:
+  no-permission: '<red>你没有权限使用这个指令。</red>'
+  player-only: '<red>该指令只能由玩家使用。</red>'
+  reload-success: '<green>EpochSkills 配置已重载。</green>'
+  reload-failure: '<red>EpochSkills 重载失败，请检查控制台。</red>'
+  node-unlocked: '<green>已解锁技能：<white>{skill}</white></green>'
+  node-not-ready: '<yellow>该技能尚未满足解锁条件。</yellow>'
+  node-auto-unlock: '<gray>该技能满足条件后会自动解锁。</gray>'
+  reset-success: '<green>已重置玩家 <white>{player}</white> 的全部技能进度。</green>'
+  reset-not-found: '<red>找不到玩家 <white>{player}</white> 的技能数据。</red>'
+  reset-usage: '<yellow>用法：/eskill reset <玩家名></yellow>'
+  unavailable: '<gray>该技能树尚未实装。</gray>'

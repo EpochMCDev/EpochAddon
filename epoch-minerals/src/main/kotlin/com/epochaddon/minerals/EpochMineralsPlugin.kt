@@ -3,6 +3,7 @@ package com.epochaddon.minerals
 import com.epochaddon.common.scoreboard.ScoreboardService
 import com.epochaddon.common.scoreboard.ScoreboardProviderOptions
 import com.epochaddon.common.util.VersionUtil
+import com.epochaddon.skills.api.EpochSkillsService
 import com.epochaddon.minerals.command.MiningPointsCommand
 import com.epochaddon.minerals.command.StoneCommand
 import com.epochaddon.minerals.config.MiningSettings
@@ -20,6 +21,7 @@ class EpochMineralsPlugin : JavaPlugin() {
     private lateinit var veinService: VeinService
     private lateinit var scoreboardService: ScoreboardService
     private lateinit var boostService: MiningBoostService
+    private lateinit var skillsService: EpochSkillsService
 
     override fun onEnable() {
         saveDefaultConfig()
@@ -39,6 +41,11 @@ class EpochMineralsPlugin : JavaPlugin() {
             server.pluginManager.disablePlugin(this)
             return
         }
+        skillsService = server.servicesManager.load(EpochSkillsService::class.java) ?: run {
+            logger.severe("EpochSkills 服务不可用，EpochMinerals 无法启动")
+            server.pluginManager.disablePlugin(this)
+            return
+        }
         boostService = MiningBoostService(this, scoreboardService)
         veinService = VeinService(this, settings.vein, messages, scoreboardService, boostService)
         scoreboardService.registerProvider(
@@ -52,11 +59,11 @@ class EpochMineralsPlugin : JavaPlugin() {
                 separatorBefore = true,
                 permission = null,
             ),
-            MineralsScoreboardProvider(settings, progressStore, boostService, veinService, messages),
+            MineralsScoreboardProvider(settings, progressStore, boostService, veinService, messages, skillsService),
         )
 
         server.pluginManager.registerEvents(
-            MiningListener(settings, progressStore, veinService, boostService, scoreboardService),
+            MiningListener(settings, progressStore, veinService, boostService, scoreboardService, skillsService),
             this,
         )
 

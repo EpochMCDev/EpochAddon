@@ -1,6 +1,8 @@
 package com.epochaddon.minerals.scoreboard
 
 import com.epochaddon.common.scoreboard.ScoreboardProvider
+import com.epochaddon.skills.api.EpochSkillUnlocks
+import com.epochaddon.skills.api.EpochSkillsService
 import com.epochaddon.minerals.config.MiningSettings
 import com.epochaddon.minerals.domain.RewardProgress
 import com.epochaddon.minerals.service.MessageService
@@ -17,16 +19,18 @@ class MineralsScoreboardProvider(
     private val boostService: MiningBoostService,
     private val veinService: VeinService,
     private val messages: MessageService,
+    private val skillsService: EpochSkillsService,
 ) : ScoreboardProvider {
 
     override fun lines(player: Player): List<Component> {
         val totalPoints = progressStore.points(player)
         val templates = settings.scoreboardMessages
-        val upcoming = RewardProgress.next(totalPoints, settings.rewards) ?: return emptyList()
-        val rewardNames = upcoming.rewards.joinToString(templates.rewardSeparator) { it.scoreboardName }
+        val showDropProgress = skillsService.hasUnlock(player, EpochSkillUnlocks.DIGGING_NEXT_DROP_DISPLAY)
+        val upcoming = if (showDropProgress) RewardProgress.next(totalPoints, settings.rewards) else null
 
         return buildList {
-            if (templates.nextRewardLine.isNotBlank()) {
+            if (upcoming != null && templates.nextRewardLine.isNotBlank()) {
+                val rewardNames = upcoming.rewards.joinToString(templates.rewardSeparator) { it.scoreboardName }
                 add(
                     messages.component(
                         templates.nextRewardLine,
@@ -34,7 +38,7 @@ class MineralsScoreboardProvider(
                     ),
                 )
             }
-            if (templates.remainingPointsLine.isNotBlank()) {
+            if (upcoming != null && templates.remainingPointsLine.isNotBlank()) {
                 add(
                     messages.component(
                         templates.remainingPointsLine,

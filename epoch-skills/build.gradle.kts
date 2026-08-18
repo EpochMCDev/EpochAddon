@@ -4,16 +4,15 @@ plugins {
 }
 
 base {
-    archivesName.set("EpochMinerals")
+    archivesName.set("EpochSkills")
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
-    compileOnly(project(":common"))
-    compileOnly(project(":epoch-skills"))
 
     testImplementation(platform("org.junit:junit-bom:5.11.4"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("io.papermc.paper:paper-api:${providers.gradleProperty("apiVersion").get()}.build.+")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -24,14 +23,14 @@ tasks.test {
 tasks.jar {
     archiveClassifier.set("plain")
     manifest {
-        attributes["Automatic-Module-Name"] = "com.epochaddon.minerals"
+        attributes["Automatic-Module-Name"] = "com.epochaddon.skills"
     }
 }
 
 tasks.shadowJar {
     archiveClassifier.set("")
     manifest {
-        attributes["Automatic-Module-Name"] = "com.epochaddon.minerals"
+        attributes["Automatic-Module-Name"] = "com.epochaddon.skills"
     }
 }
 

@@ -1,0 +1,57 @@
+id: gathering_digging_skt_01
+profession-id: gathering.digging
+profession-name: 采矿
+title: '<dark_gray>采矿技能树 - 第一页</dark_gray>'
+page: 1
+
+# Slots use the document's 1..54 chest coordinates.
+connection-slots: [21, 22, 24, 25]
+
+nodes:
+  digger:
+    level: 1
+    name: 挖掘者
+    slot: 20
+    icon: STONE_SHOVEL
+    auto-unlock: true
+    description:
+      - '<gray>解锁资源系统（挖矿系统）</gray>'
+    prerequisites: []
+    requirement:
+      type: counter
+      key: stone-broken
+      amount: 16
+      materials: [STONE]
+    grants:
+      - epochminerals:resource_system
+
+  prospector:
+    level: 2
+    name: 勘探家
+    slot: 23
+    icon: COMPASS
+    auto-unlock: false
+    description:
+      - '<gray>在右侧显示下次掉落的矿石</gray>'
+      - '<gray>以及仍需获得的积分</gray>'
+    prerequisites: [digger]
+    requirement:
+      type: experience
+      amount: 57
+    grants:
+      - epochminerals:next_drop_display
+
+  practice_makes_perfect:
+    level: 3
+    name: 熟能生巧
+    slot: 26
+    icon: DIAMOND_PICKAXE
+    auto-unlock: false
+    description:
+      - '<gray>挖掘速度 <green>+0.35</green></gray>'
+    prerequisites: [prospector]
+    requirement:
+      type: experience
+      amount: 102
+    grants:
+      - epochskills:digging_speed
