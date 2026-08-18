@@ -75,3 +75,22 @@ markets:
         name: "<yellow>小麦"
       carrots:
         name: "<gold>胡萝卜"
+    rotation:
+      beetroot:
+        name: "<red>甜菜根"
+      potatoes:
+        name: "<yellow>马铃薯"
+      melon:
+        name: "<green>西瓜片"
+      pumpkin:
+        name: "<gold>南瓜"
+      sugar_cane:
+        name: "<green>甘蔗"
+      cocoa_beans:
+        name: "<brown>可可豆"
+      sweet_berries:
+        name: "<red>甜浆果"
+      kelp:
+        name: "<dark_green>海带"
+      ce_seasonal_crop:
+        name: "<light_purple>CraftEngine 季节作物"

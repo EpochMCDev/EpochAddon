@@ -19,4 +19,12 @@ class PeriodKeyTest {
         assertEquals("b10339", PeriodKey.biDaily(LocalDate.of(2026, 8, 13)));
         assertEquals("b10339", PeriodKey.biDaily(LocalDate.of(2026, 8, 14)));
     }
+
+    @Test
+    void configurableCycleGroupsDatesByTheConfiguredLength() {
+        assertEquals("c3-229", PeriodKey.cycle(LocalDate.of(1971, 11, 20), 3));
+        assertEquals("c3-229", PeriodKey.cycle(LocalDate.of(1971, 11, 21), 3));
+        assertEquals("c3-230", PeriodKey.cycle(LocalDate.of(1971, 11, 22), 3));
+        assertEquals("c3-230", PeriodKey.cycle(LocalDate.of(1971, 11, 23), 3));
+    }
 }

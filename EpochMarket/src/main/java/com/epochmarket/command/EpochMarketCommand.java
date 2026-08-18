@@ -187,7 +187,7 @@ public final class EpochMarketCommand implements CommandExecutor, TabCompleter {
         }
         if (args.length == 4 && (args[0].equalsIgnoreCase("quota") || args[0].equalsIgnoreCase("reset"))) {
             Market market = gui.market(args[2]);
-            return market == null ? List.of() : match(args[3], market.entries().stream().map(MarketEntry::id).toList());
+            return market == null ? List.of() : match(args[3], gui.entries(market.id()).stream().map(MarketEntry::id).toList());
         }
         return List.of();
     }

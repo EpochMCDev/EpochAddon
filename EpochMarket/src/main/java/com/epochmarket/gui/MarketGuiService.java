@@ -18,6 +18,8 @@ import org.bukkit.plugin.Plugin;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,16 +39,23 @@ public final class MarketGuiService {
     private final SaleService sales;
     private final SoundService sounds;
     private final Plugin plugin;
+    private final Clock clock;
     private final DecimalFormat moneyFormat = new DecimalFormat("#,##0.00");
 
     public MarketGuiService(Plugin plugin, MarketConfigService markets, LanguageService language, ItemMatcher matcher,
                             SaleService sales, SoundService sounds) {
+        this(plugin, markets, language, matcher, sales, sounds, Clock.systemDefaultZone());
+    }
+
+    public MarketGuiService(Plugin plugin, MarketConfigService markets, LanguageService language, ItemMatcher matcher,
+                            SaleService sales, SoundService sounds, Clock clock) {
         this.plugin = plugin;
         this.markets = markets;
         this.language = language;
         this.matcher = matcher;
         this.sales = sales;
         this.sounds = sounds;
+        this.clock = clock;
     }
 
     public void openSelector(Player player) {
@@ -90,22 +99,25 @@ public final class MarketGuiService {
             message(player, "messages.no-permission", Map.of());
             return;
         }
-        Inventory inventory = Bukkit.createInventory(new MarketHolder(market.id()), market.rows() * 9,
+        LocalDate date = today();
+        String viewKey = market.viewKey(date);
+        Inventory inventory = Bukkit.createInventory(new MarketHolder(market.id(), viewKey), market.rows() * 9,
                 language.component(market.titleKey()));
-        for (MarketEntry entry : market.entries()) {
+        for (MarketEntry entry : market.entriesAt(date)) {
             if (!matcher.isAvailable(entry)) {
                 inventory.setItem(entry.slot(), unavailableItem());
                 continue;
             }
             inventory.setItem(entry.slot(), loadingItem());
-            loadMarketEntry(player, inventory, market, entry);
+            loadMarketEntry(player, inventory, market, entry, viewKey);
         }
         player.openInventory(inventory);
     }
 
     public void openConfirm(Player player, String marketId, String entryId, int requestedAmount) {
         Market market = markets.market(marketId);
-        MarketEntry entry = market == null ? null : market.entry(entryId);
+        LocalDate date = today();
+        MarketEntry entry = market == null ? null : market.entry(entryId, date);
         if (market == null || entry == null || !canAccess(player, market)) {
             openSelector(player);
             return;
@@ -115,13 +127,15 @@ public final class MarketGuiService {
             openMarket(player, marketId);
             return;
         }
-        Inventory inventory = Bukkit.createInventory(new LoadingConfirmHolder(marketId, entryId, requestedAmount), CONFIRM_SIZE,
+        String viewKey = market.viewKey(date);
+        Inventory inventory = Bukkit.createInventory(
+                new LoadingConfirmHolder(marketId, entryId, requestedAmount, viewKey), CONFIRM_SIZE,
                 language.component("gui.confirm-title"));
         fill(inventory, Material.BLACK_STAINED_GLASS_PANE);
         inventory.setItem(22, loadingItem());
         player.openInventory(inventory);
         sales.availability(player, market, entry).whenComplete((availability, error) -> runOnMain(() -> {
-            if (!isCurrentLoadingConfirm(player, marketId, entryId, requestedAmount)) {
+            if (!isCurrentLoadingConfirm(player, marketId, entryId, requestedAmount, viewKey)) {
                 return;
             }
             if (error != null) {
@@ -144,7 +158,8 @@ public final class MarketGuiService {
                                 SaleService.Availability availability) {
         int amount = Math.max(1, Math.min(requestedAmount, availability.maximum()));
         Inventory inventory = Bukkit.createInventory(new ConfirmHolder(market.id(), entry.id(), amount,
-                availability.inventoryCount(), availability.remaining()), CONFIRM_SIZE, language.component("gui.confirm-title"));
+                availability.inventoryCount(), availability.remaining(), market.viewKey(today())), CONFIRM_SIZE,
+                language.component("gui.confirm-title"));
         fill(inventory, Material.BLACK_STAINED_GLASS_PANE);
         inventory.setItem(13, confirmItem(entry, amount, availability));
         inventory.setItem(20, control(Material.LIME_DYE, "gui.add-one"));
@@ -181,12 +196,22 @@ public final class MarketGuiService {
 
     public MarketEntry entry(String marketId, String entryId) {
         Market market = markets.market(marketId);
-        return market == null ? null : market.entry(entryId);
+        return market == null ? null : market.entry(entryId, today());
     }
 
-    private void loadMarketEntry(Player player, Inventory inventory, Market market, MarketEntry entry) {
+    public Collection<MarketEntry> entries(String marketId) {
+        Market market = markets.market(marketId);
+        return market == null ? List.of() : market.entriesAt(today());
+    }
+
+    public String viewKey(String marketId) {
+        Market market = markets.market(marketId);
+        return market == null ? "" : market.viewKey(today());
+    }
+
+    private void loadMarketEntry(Player player, Inventory inventory, Market market, MarketEntry entry, String viewKey) {
         sales.remaining(player.getUniqueId(), market, entry).whenComplete((remaining, error) -> runOnMain(() -> {
-            if (!isCurrentMarket(player, market.id(), inventory)) {
+            if (!isCurrentMarket(player, market.id(), viewKey, inventory)) {
                 return;
             }
             inventory.setItem(entry.slot(), error == null ? entryItem(entry, remaining) : unavailableItem());
@@ -223,16 +248,21 @@ public final class MarketGuiService {
         return item(Material.CLOCK, language.component("gui.loading"), List.of());
     }
 
-    private boolean isCurrentMarket(Player player, String marketId, Inventory inventory) {
+    private boolean isCurrentMarket(Player player, String marketId, String viewKey, Inventory inventory) {
         Inventory top = player.getOpenInventory().getTopInventory();
-        return top == inventory && top.getHolder(false) instanceof MarketHolder holder && holder.marketId().equals(marketId);
+        return top == inventory && top.getHolder(false) instanceof MarketHolder holder
+                && holder.marketId().equals(marketId) && holder.viewKey().equals(viewKey)
+                && viewKey.equals(viewKey(marketId));
     }
 
-    private boolean isCurrentLoadingConfirm(Player player, String marketId, String entryId, int requestedAmount) {
+    private boolean isCurrentLoadingConfirm(Player player, String marketId, String entryId, int requestedAmount,
+                                            String viewKey) {
         return player.getOpenInventory().getTopInventory().getHolder(false) instanceof LoadingConfirmHolder holder
                 && holder.marketId().equals(marketId)
                 && holder.entryId().equals(entryId)
-                && holder.requestedAmount() == requestedAmount;
+                && holder.requestedAmount() == requestedAmount
+                && holder.viewKey().equals(viewKey)
+                && viewKey.equals(viewKey(marketId));
     }
 
     private void runOnMain(Runnable task) {
@@ -270,5 +300,9 @@ public final class MarketGuiService {
 
     public String format(BigDecimal value) {
         return moneyFormat.format(value);
+    }
+
+    public LocalDate today() {
+        return LocalDate.now(clock);
     }
 }

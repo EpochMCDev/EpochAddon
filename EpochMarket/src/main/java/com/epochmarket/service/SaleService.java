@@ -64,6 +64,10 @@ public final class SaleService {
      * Completes on Paper's main thread. The callback is never invoked from the SQLite executor.
      */
     public void sell(Player player, Market market, MarketEntry entry, int amount, Consumer<SaleResult> callback) {
+        if (market.entry(entry.id(), today()) == null) {
+            callback.accept(SaleResult.failure(SaleResult.Status.CHANGED));
+            return;
+        }
         if (!matcher.isAvailable(entry)) {
             callback.accept(SaleResult.failure(SaleResult.Status.UNAVAILABLE));
             return;
@@ -99,7 +103,8 @@ public final class SaleService {
 
     private void completeReservedSale(Player player, Market market, MarketEntry entry, int amount, LocalDate date,
                                       Consumer<SaleResult> callback) {
-        if (!player.isOnline() || !matcher.isAvailable(entry) || inventories.count(player, entry) < amount) {
+        if (!player.isOnline() || market.entry(entry.id(), today()) == null || !matcher.isAvailable(entry)
+                || inventories.count(player, entry) < amount) {
             releaseQuietly(player.getUniqueId(), market, entry, date, amount);
             callback.accept(SaleResult.failure(SaleResult.Status.CHANGED));
             return;

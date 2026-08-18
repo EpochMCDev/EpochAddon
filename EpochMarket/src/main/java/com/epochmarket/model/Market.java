@@ -4,8 +4,12 @@ import org.bukkit.Material;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import com.epochmarket.util.PeriodKey;
 
 public final class Market {
     private final String id;
@@ -16,9 +20,16 @@ public final class Market {
     private final String selectorNameKey;
     private final String selectorLoreKey;
     private final Map<String, MarketEntry> entries;
+    private final RotatingStock rotatingStock;
 
     public Market(String id, String titleKey, int rows, String permission, Material selectorIcon,
                   String selectorNameKey, String selectorLoreKey, Collection<MarketEntry> entries) {
+        this(id, titleKey, rows, permission, selectorIcon, selectorNameKey, selectorLoreKey, entries, null);
+    }
+
+    public Market(String id, String titleKey, int rows, String permission, Material selectorIcon,
+                  String selectorNameKey, String selectorLoreKey, Collection<MarketEntry> entries,
+                  RotatingStock rotatingStock) {
         this.id = Objects.requireNonNull(id, "id");
         this.titleKey = Objects.requireNonNull(titleKey, "titleKey");
         this.rows = rows;
@@ -32,6 +43,7 @@ public final class Market {
                 throw new IllegalArgumentException("Duplicate entry ID: " + entry.id());
             }
         }
+        this.rotatingStock = rotatingStock;
     }
 
     public String id() {
@@ -69,5 +81,25 @@ public final class Market {
     public MarketEntry entry(String entryId) {
         return entries.get(entryId);
     }
-}
 
+    public Collection<MarketEntry> entriesAt(LocalDate date) {
+        List<MarketEntry> current = new ArrayList<>(entries.values());
+        if (rotatingStock != null) {
+            current.addAll(rotatingStock.entries(id, date));
+        }
+        return List.copyOf(current);
+    }
+
+    public MarketEntry entry(String entryId, LocalDate date) {
+        MarketEntry fixed = entries.get(entryId);
+        if (fixed != null) {
+            return fixed;
+        }
+        return entriesAt(date).stream().filter(entry -> entry.id().equals(entryId)).findFirst().orElse(null);
+    }
+
+    public String viewKey(LocalDate date) {
+        String rotationKey = rotatingStock == null ? "fixed" : rotatingStock.cycleKey(date);
+        return PeriodKey.daily(date) + ":" + rotationKey;
+    }
+}
