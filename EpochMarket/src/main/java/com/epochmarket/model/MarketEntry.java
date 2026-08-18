@@ -9,7 +9,7 @@ public record MarketEntry(
         String id,
         ItemSource source,
         String itemId,
-        Material icon,
+        ItemIcon icon,
         int slot,
         BigDecimal unitPrice,
         int dailyLimit,
@@ -32,5 +32,9 @@ public record MarketEntry(
             throw new IllegalArgumentException("unit price cannot be negative");
         }
     }
-}
 
+    public MarketEntry(String id, ItemSource source, String itemId, Material icon, int slot,
+                       BigDecimal unitPrice, int dailyLimit, String nameKey) {
+        this(id, source, itemId, ItemIcon.vanilla(icon), slot, unitPrice, dailyLimit, nameKey);
+    }
+}

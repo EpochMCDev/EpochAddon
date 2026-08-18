@@ -1,6 +1,7 @@
 package com.epochmarket.config;
 
 import com.epochmarket.model.ItemSource;
+import com.epochmarket.model.ItemIcon;
 import com.epochmarket.model.Market;
 import com.epochmarket.model.MarketEntry;
 import com.epochmarket.model.RotatingCandidate;
@@ -77,7 +78,7 @@ public final class MarketConfigService {
         if (selector == null) {
             throw new IllegalArgumentException("missing selector section");
         }
-        Material selectorIcon = material(required(selector, "icon", fileName));
+        ItemIcon selectorIcon = icon(selector, "icon", null, fileName);
         String selectorNameKey = required(selector, "name-key", fileName);
         String selectorLoreKey = required(selector, "lore-key", fileName);
         ConfigurationSection entries = config.getConfigurationSection("entries");
@@ -103,11 +104,13 @@ public final class MarketConfigService {
                 }
                 BigDecimal price = new BigDecimal(required(entry, "unit-price", fileName));
                 int limit = entry.getInt("daily-limit", -1);
+                ItemSource source = ItemSource.parse(required(entry, "source", fileName));
+                String itemId = required(entry, "item-id", fileName);
                 MarketEntry parsed = new MarketEntry(
                         entryId,
-                        ItemSource.parse(required(entry, "source", fileName)),
-                        required(entry, "item-id", fileName),
-                        material(required(entry, "icon", fileName)),
+                        source,
+                        itemId,
+                        icon(entry, "icon", source, fileName),
                         slot,
                         price,
                         limit,
@@ -170,11 +173,13 @@ public final class MarketConfigService {
                 continue;
             }
             try {
+                ItemSource source = ItemSource.parse(required(candidate, "source", fileName));
+                String itemId = required(candidate, "item-id", fileName);
                 candidates.add(new RotatingCandidate(
                         candidateId,
-                        ItemSource.parse(required(candidate, "source", fileName)),
-                        required(candidate, "item-id", fileName),
-                        material(required(candidate, "icon", fileName)),
+                        source,
+                        itemId,
+                        icon(candidate, "icon", source, fileName),
                         new BigDecimal(required(candidate, "unit-price", fileName)),
                         candidate.getInt("daily-limit", -1),
                         required(candidate, "name-key", fileName)
@@ -201,5 +206,31 @@ public final class MarketConfigService {
             throw new IllegalArgumentException("invalid item material '" + input + "'");
         }
         return material;
+    }
+
+    private static ItemIcon icon(ConfigurationSection section, String path, ItemSource defaultSource, String fileName) {
+        ConfigurationSection definition = section.getConfigurationSection(path);
+        if (definition != null) {
+            ItemSource source = ItemSource.parse(required(definition, "source", fileName));
+            String itemId = required(definition, "item-id", fileName);
+            return switch (source) {
+                case VANILLA -> ItemIcon.vanilla(material(itemId));
+                case CRAFT_ENGINE -> ItemIcon.craftEngine(itemId);
+                case SLIMEFUN -> throw new IllegalArgumentException("icon source SLIMEFUN is not supported");
+            };
+        }
+
+        Object raw = section.get(path);
+        if (!(raw instanceof String input) || input.isBlank()) {
+            throw new IllegalArgumentException("missing '" + path + "' in " + fileName);
+        }
+        Material material = Material.matchMaterial(input);
+        if (material != null && material.isItem()) {
+            return ItemIcon.vanilla(material);
+        }
+        if (defaultSource == ItemSource.CRAFT_ENGINE) {
+            return ItemIcon.craftEngine(input);
+        }
+        throw new IllegalArgumentException("invalid item material '" + input + "'");
     }
 }

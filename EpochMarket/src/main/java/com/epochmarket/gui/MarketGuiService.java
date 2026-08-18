@@ -76,7 +76,10 @@ public final class MarketGuiService {
             int end = Math.min(visible.size(), start + SELECTOR_PER_PAGE);
             for (int index = start; index < end; index++) {
                 Market market = visible.get(index);
-                inventory.setItem(index - start, item(market.selectorIcon(), language.component(market.selectorNameKey()),
+                ItemStack icon = matcher.icon(market.selectorIcon());
+                inventory.setItem(index - start, icon == null
+                        ? unavailableItem()
+                        : item(icon, language.component(market.selectorNameKey()),
                         language.components(market.selectorLoreKey(), Map.of())));
             }
         }
@@ -104,7 +107,7 @@ public final class MarketGuiService {
         Inventory inventory = Bukkit.createInventory(new MarketHolder(market.id(), viewKey), market.rows() * 9,
                 language.component(market.titleKey()));
         for (MarketEntry entry : market.entriesAt(date)) {
-            if (!matcher.isAvailable(entry)) {
+            if (!matcher.isAvailable(entry) || matcher.icon(entry.icon()) == null) {
                 inventory.setItem(entry.slot(), unavailableItem());
                 continue;
             }
@@ -122,7 +125,7 @@ public final class MarketGuiService {
             openSelector(player);
             return;
         }
-        if (!matcher.isAvailable(entry)) {
+        if (!matcher.isAvailable(entry) || matcher.icon(entry.icon()) == null) {
             message(player, "messages.unavailable", Map.of());
             openMarket(player, marketId);
             return;
@@ -214,18 +217,23 @@ public final class MarketGuiService {
             if (!isCurrentMarket(player, market.id(), viewKey, inventory)) {
                 return;
             }
-            inventory.setItem(entry.slot(), error == null ? entryItem(entry, remaining) : unavailableItem());
+            ItemStack display = error == null ? entryItem(entry, remaining) : null;
+            inventory.setItem(entry.slot(), display == null ? unavailableItem() : display);
         }));
     }
 
     private ItemStack entryItem(MarketEntry entry, int remaining) {
         Map<String, String> values = Map.of("unit_price", format(entry.unitPrice()),
                 "remaining", String.valueOf(remaining), "limit", String.valueOf(entry.dailyLimit()));
-        return item(entry.icon(), language.component(entry.nameKey()), language.components("gui.entry-lore", values));
+        ItemStack icon = matcher.icon(entry.icon());
+        return icon == null ? null
+                : item(icon, language.component(entry.nameKey()), language.components("gui.entry-lore", values));
     }
 
     private ItemStack confirmItem(MarketEntry entry, int amount, SaleService.Availability availability) {
-        return item(entry.icon(), language.component(entry.nameKey()),
+        ItemStack icon = matcher.icon(entry.icon());
+        return icon == null ? unavailableItem()
+                : item(icon, language.component(entry.nameKey()),
                 language.components("gui.confirm-item-lore", amountValues(entry, amount, availability)));
     }
 
@@ -286,7 +294,11 @@ public final class MarketGuiService {
     }
 
     private static ItemStack item(Material material, Component name, List<Component> lore) {
-        ItemStack stack = new ItemStack(material);
+        return item(new ItemStack(material), name, lore);
+    }
+
+    private static ItemStack item(ItemStack base, Component name, List<Component> lore) {
+        ItemStack stack = base.clone();
         ItemMeta meta = stack.getItemMeta();
         meta.displayName(name);
         meta.lore(lore);

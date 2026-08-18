@@ -1,6 +1,7 @@
 package com.epochmarket.integration;
 
 import com.epochmarket.model.ItemSource;
+import com.epochmarket.model.ItemIcon;
 import com.epochmarket.model.MarketEntry;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -9,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 /**
@@ -30,6 +32,15 @@ public final class ReflectiveItemMatcher implements ItemMatcher {
             case VANILLA -> Material.matchMaterial(entry.itemId()) != null;
             case CRAFT_ENGINE -> customItemById(entry.itemId()) != null;
             case SLIMEFUN -> slimefunItemById(entry.itemId()) != null;
+        };
+    }
+
+    @Override
+    public ItemStack icon(ItemIcon icon) {
+        return switch (icon.source()) {
+            case VANILLA -> new ItemStack(Material.matchMaterial(icon.itemId()));
+            case CRAFT_ENGINE -> customItemStackById(icon.itemId());
+            case SLIMEFUN -> null;
         };
     }
 
@@ -60,11 +71,37 @@ public final class ReflectiveItemMatcher implements ItemMatcher {
         }
         try {
             Class<?> api = Class.forName("net.momirealms.craftengine.bukkit.api.CraftEngineItems");
-            return api.getMethod("byId", String.class).invoke(null, id);
+            return unwrap(api.getMethod("byId", String.class).invoke(null, id));
         } catch (ReflectiveOperationException | LinkageError exception) {
             warnCraftEngine(exception);
             return null;
         }
+    }
+
+    private ItemStack customItemStackById(String id) {
+        Object customItem = customItemById(id);
+        if (customItem == null) {
+            return null;
+        }
+        ItemStack direct = itemStack(customItem);
+        if (direct != null) {
+            return direct;
+        }
+        for (String methodName : new String[]{"buildItemStack", "getItemStack", "createItemStack", "build"}) {
+            try {
+                Method method = customItem.getClass().getMethod(methodName);
+                ItemStack built = itemStack(method.invoke(customItem));
+                if (built != null) {
+                    return built;
+                }
+            } catch (NoSuchMethodException ignored) {
+                // CraftEngine API versions expose different item-builder method names.
+            } catch (ReflectiveOperationException | LinkageError exception) {
+                warnCraftEngine(exception);
+                return null;
+            }
+        }
+        return null;
     }
 
     private String craftEngineItemId(ItemStack stack) {
@@ -73,7 +110,7 @@ public final class ReflectiveItemMatcher implements ItemMatcher {
         }
         try {
             Class<?> api = Class.forName("net.momirealms.craftengine.bukkit.api.CraftEngineItems");
-            Object key = api.getMethod("getCustomItemId", ItemStack.class).invoke(null, stack);
+            Object key = unwrap(api.getMethod("getCustomItemId", ItemStack.class).invoke(null, stack));
             return key == null ? null : key.toString();
         } catch (ReflectiveOperationException | LinkageError exception) {
             warnCraftEngine(exception);
@@ -126,6 +163,18 @@ public final class ReflectiveItemMatcher implements ItemMatcher {
         }
     }
 
+    private static Object unwrap(Object value) {
+        while (value instanceof Optional<?> optional) {
+            value = optional.orElse(null);
+        }
+        return value;
+    }
+
+    private static ItemStack itemStack(Object value) {
+        Object unwrapped = unwrap(value);
+        return unwrapped instanceof ItemStack stack ? stack.clone() : null;
+    }
+
     private static String rootMessage(Throwable exception) {
         Throwable cause = exception instanceof InvocationTargetException invocation && invocation.getCause() != null
                 ? invocation.getCause() : exception;
@@ -133,4 +182,3 @@ public final class ReflectiveItemMatcher implements ItemMatcher {
         return cause.getClass().getSimpleName() + (message == null ? "" : ": " + message);
     }
 }
-

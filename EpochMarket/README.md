@@ -63,15 +63,25 @@ rotation:
   slots: [0, 1, 2, 9, 10, 11]
   candidates:
     seasonal_crop:
-      source: CRAFT_ENGINE
-      item-id: epoch:seasonal_crop
-      icon: WHEAT
-      unit-price: 12.0
-      daily-limit: 256
-      name-key: markets.plants.rotation.seasonal_crop.name
+    source: CRAFT_ENGINE
+    item-id: epoch:seasonal_crop
+    icon: epoch:seasonal_crop
+    unit-price: 12.0
+    daily-limit: 256
+    name-key: markets.plants.rotation.seasonal_crop.name
 ```
 
 `rotation.slots` 的数量决定轮换位数量；候选数量必须不少于槽位数量。`source: CRAFT_ENGINE` 使用 CraftEngine 自定义物品 ID，CraftEngine 未安装或 ID 不存在时，该轮换位会显示为暂不可用。
+
+`icon` 支持原版材料和 CraftEngine 物品。原版写法保持为 `icon: WHEAT`；当条目的 `source` 为 `CRAFT_ENGINE` 时，非原版材料字符串会按 CraftEngine ID 解析。也可以在任何图标位置使用显式写法：
+
+```yaml
+icon:
+  source: CRAFT_ENGINE
+  item-id: epoch:seasonal_crop
+```
+
+图标只影响 GUI 显示，实际收购匹配仍以条目的 `source` 和 `item-id` 为准。
 
 ## 数据与每日刷新
 

@@ -10,7 +10,7 @@ public record RotatingCandidate(
         String id,
         ItemSource source,
         String itemId,
-        Material icon,
+        ItemIcon icon,
         BigDecimal unitPrice,
         int dailyLimit,
         String nameKey
@@ -36,5 +36,10 @@ public record RotatingCandidate(
     public MarketEntry toEntry(int slot, String cycleKey) {
         return new MarketEntry("rotation." + slot + "." + cycleKey + "." + id,
                 source, itemId, icon, slot, unitPrice, dailyLimit, nameKey);
+    }
+
+    public RotatingCandidate(String id, ItemSource source, String itemId, Material icon,
+                             BigDecimal unitPrice, int dailyLimit, String nameKey) {
+        this(id, source, itemId, ItemIcon.vanilla(icon), unitPrice, dailyLimit, nameKey);
     }
 }

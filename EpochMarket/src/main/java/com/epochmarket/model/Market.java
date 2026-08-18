@@ -16,18 +16,18 @@ public final class Market {
     private final String titleKey;
     private final int rows;
     private final String permission;
-    private final Material selectorIcon;
+    private final ItemIcon selectorIcon;
     private final String selectorNameKey;
     private final String selectorLoreKey;
     private final Map<String, MarketEntry> entries;
     private final RotatingStock rotatingStock;
 
-    public Market(String id, String titleKey, int rows, String permission, Material selectorIcon,
+    public Market(String id, String titleKey, int rows, String permission, ItemIcon selectorIcon,
                   String selectorNameKey, String selectorLoreKey, Collection<MarketEntry> entries) {
         this(id, titleKey, rows, permission, selectorIcon, selectorNameKey, selectorLoreKey, entries, null);
     }
 
-    public Market(String id, String titleKey, int rows, String permission, Material selectorIcon,
+    public Market(String id, String titleKey, int rows, String permission, ItemIcon selectorIcon,
                   String selectorNameKey, String selectorLoreKey, Collection<MarketEntry> entries,
                   RotatingStock rotatingStock) {
         this.id = Objects.requireNonNull(id, "id");
@@ -46,6 +46,19 @@ public final class Market {
         this.rotatingStock = rotatingStock;
     }
 
+    public Market(String id, String titleKey, int rows, String permission, Material selectorIcon,
+                  String selectorNameKey, String selectorLoreKey, Collection<MarketEntry> entries) {
+        this(id, titleKey, rows, permission, ItemIcon.vanilla(selectorIcon), selectorNameKey,
+                selectorLoreKey, entries);
+    }
+
+    public Market(String id, String titleKey, int rows, String permission, Material selectorIcon,
+                  String selectorNameKey, String selectorLoreKey, Collection<MarketEntry> entries,
+                  RotatingStock rotatingStock) {
+        this(id, titleKey, rows, permission, ItemIcon.vanilla(selectorIcon), selectorNameKey,
+                selectorLoreKey, entries, rotatingStock);
+    }
+
     public String id() {
         return id;
     }
@@ -62,7 +75,7 @@ public final class Market {
         return permission;
     }
 
-    public Material selectorIcon() {
+    public ItemIcon selectorIcon() {
         return selectorIcon;
     }
 

@@ -90,7 +90,7 @@ rotation:
     # ce_seasonal_crop:
     #   source: CRAFT_ENGINE
     #   item-id: epoch:seasonal_crop
-    #   icon: WHEAT
+    #   icon: epoch:seasonal_crop
     #   unit-price: 12.0
     #   daily-limit: 256
     #   name-key: markets.plants.rotation.ce_seasonal_crop.name
