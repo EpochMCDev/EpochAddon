@@ -17,7 +17,7 @@ public record ItemIcon(ItemSource source, String itemId) {
         }
         if (source == ItemSource.VANILLA) {
             Material material = Material.matchMaterial(itemId);
-            if (material == null || !material.isItem()) {
+            if (material == null || isAir(material)) {
                 throw new IllegalArgumentException("invalid item material '" + itemId + "'");
             }
         }
@@ -25,7 +25,7 @@ public record ItemIcon(ItemSource source, String itemId) {
 
     public static ItemIcon vanilla(Material material) {
         Objects.requireNonNull(material, "material");
-        if (!material.isItem()) {
+        if (isAir(material)) {
             throw new IllegalArgumentException("icon material must be an item");
         }
         return new ItemIcon(ItemSource.VANILLA, material.name());
@@ -33,5 +33,9 @@ public record ItemIcon(ItemSource source, String itemId) {
 
     public static ItemIcon craftEngine(String itemId) {
         return new ItemIcon(ItemSource.CRAFT_ENGINE, itemId);
+    }
+
+    private static boolean isAir(Material material) {
+        return material == Material.AIR || material == Material.CAVE_AIR || material == Material.VOID_AIR;
     }
 }

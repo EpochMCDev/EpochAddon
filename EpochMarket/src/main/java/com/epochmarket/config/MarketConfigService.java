@@ -202,7 +202,7 @@ public final class MarketConfigService {
 
     private static Material material(String input) {
         Material material = Material.matchMaterial(input);
-        if (material == null || !material.isItem()) {
+        if (material == null || isAir(material)) {
             throw new IllegalArgumentException("invalid item material '" + input + "'");
         }
         return material;
@@ -225,12 +225,16 @@ public final class MarketConfigService {
             throw new IllegalArgumentException("missing '" + path + "' in " + fileName);
         }
         Material material = Material.matchMaterial(input);
-        if (material != null && material.isItem()) {
+        if (material != null && !isAir(material)) {
             return ItemIcon.vanilla(material);
         }
         if (defaultSource == ItemSource.CRAFT_ENGINE) {
             return ItemIcon.craftEngine(input);
         }
         throw new IllegalArgumentException("invalid item material '" + input + "'");
+    }
+
+    private static boolean isAir(Material material) {
+        return material == Material.AIR || material == Material.CAVE_AIR || material == Material.VOID_AIR;
     }
 }
