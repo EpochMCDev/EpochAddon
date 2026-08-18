@@ -66,6 +66,7 @@ data class MiningSettings(
     val blocks: Set<Material>,
     val gameModes: Set<GameMode>,
     val pointsPerBlock: Double,
+    val requireResourceSystemUnlock: Boolean,
     val rewards: List<RewardRule<MineralReward>>,
     val specialRegionMultiplier: Double,
     val specialRegions: List<CuboidRegion>,
@@ -111,6 +112,10 @@ data class MiningSettings(
                 blocks = blocks,
                 gameModes = gameModes,
                 pointsPerBlock = positiveOrDefault(config.getDouble("mining.points-per-block"), 1.0),
+                requireResourceSystemUnlock = config.getBoolean(
+                    "skills.require-resource-system-unlock",
+                    false,
+                ),
                 rewards = rewards,
                 specialRegionMultiplier = positiveOrDefault(
                     config.getDouble("special-regions.multiplier"),

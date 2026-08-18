@@ -1,10 +1,10 @@
 package com.epochaddon.minerals.scoreboard
 
 import com.epochaddon.common.scoreboard.ScoreboardProvider
-import com.epochaddon.skills.api.EpochSkillUnlocks
-import com.epochaddon.skills.api.EpochSkillsService
 import com.epochaddon.minerals.config.MiningSettings
 import com.epochaddon.minerals.domain.RewardProgress
+import com.epochaddon.minerals.service.EpochSkillsBridge
+import com.epochaddon.minerals.service.EpochSkillsIds
 import com.epochaddon.minerals.service.MessageService
 import com.epochaddon.minerals.service.MiningBoostService
 import com.epochaddon.minerals.service.PlayerProgressStore
@@ -19,13 +19,14 @@ class MineralsScoreboardProvider(
     private val boostService: MiningBoostService,
     private val veinService: VeinService,
     private val messages: MessageService,
-    private val skillsService: EpochSkillsService,
+    private val skillsService: EpochSkillsBridge?,
 ) : ScoreboardProvider {
 
     override fun lines(player: Player): List<Component> {
         val totalPoints = progressStore.points(player)
         val templates = settings.scoreboardMessages
-        val showDropProgress = skillsService.hasUnlock(player, EpochSkillUnlocks.DIGGING_NEXT_DROP_DISPLAY)
+        val showDropProgress = !settings.requireResourceSystemUnlock ||
+            skillsService?.hasUnlock(player, EpochSkillsIds.DIGGING_NEXT_DROP_DISPLAY) == true
         val upcoming = if (showDropProgress) RewardProgress.next(totalPoints, settings.rewards) else null
 
         return buildList {

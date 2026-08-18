@@ -7,6 +7,12 @@ mining:
     - SURVIVAL
   points-per-block: 1.0
 
+# 是否要求玩家先通过 EpochSkills 解锁“挖掘者”才可获得矿物积分与掉落。
+# 生产服尚未部署技能书时保持 false；此时 EpochSkills 为可选依赖，挖石头会直接掉矿。
+# 设为 true 会恢复技能树限制，并要求安装 EpochSkills。
+skills:
+  require-resource-system-unlock: false
+
 # 每累计指定数量的矿物积分，就掉落 1 个对应矿物。
 rewards:
   coal:

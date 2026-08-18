@@ -4,7 +4,8 @@ main: com.epochaddon.minerals.EpochMineralsPlugin
 api-version: '26.2'
 description: Mine stone to accumulate points and receive mineral drops.
 authors: [xiaobai]
-depend: [EpochCommon, EpochSkills]
+depend: [EpochCommon]
+softdepend: [EpochSkills]
 commands:
   stone:
     description: View the mining points leaderboard.
