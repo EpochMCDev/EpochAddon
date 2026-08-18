@@ -85,7 +85,11 @@ public final class MarketGuiListener implements Listener {
             gui.openSelector(player);
             return;
         }
-        for (MarketEntry entry : market.entries()) {
+        if (!holder.viewKey().equals(gui.viewKey(market.id()))) {
+            gui.openMarket(player, market.id());
+            return;
+        }
+        for (MarketEntry entry : gui.entries(market.id())) {
             if (entry.slot() == slot) {
                 gui.openConfirm(player, market.id(), entry.id(), 1);
                 return;
@@ -95,9 +99,17 @@ public final class MarketGuiListener implements Listener {
 
     private void handleConfirm(Player player, ConfirmHolder holder, int slot) {
         Market market = gui.market(holder.marketId());
-        MarketEntry entry = gui.entry(holder.marketId(), holder.entryId());
-        if (market == null || entry == null || !gui.canAccess(player, market)) {
+        if (market == null || !gui.canAccess(player, market)) {
             gui.openSelector(player);
+            return;
+        }
+        if (!holder.viewKey().equals(gui.viewKey(market.id()))) {
+            gui.openMarket(player, market.id());
+            return;
+        }
+        MarketEntry entry = gui.entry(holder.marketId(), holder.entryId());
+        if (entry == null) {
+            gui.openMarket(player, market.id());
             return;
         }
         int amount = holder.amount();

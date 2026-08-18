@@ -10,7 +10,7 @@ entries:
     source: VANILLA
     item-id: WHEAT
     icon: WHEAT
-    slot: 12
+    slot: 15
     unit-price: 2.0
     daily-limit: 512
     name-key: markets.plants.entries.wheat.name
@@ -18,8 +18,79 @@ entries:
     source: VANILLA
     item-id: CARROT
     icon: CARROT
-    slot: 14
+    slot: 17
     unit-price: 2.5
     daily-limit: 512
     name-key: markets.plants.entries.carrots.name
 
+# The candidates are shuffled once per cycle and assigned to these six slots.
+# Add a CRAFT_ENGINE candidate here when CraftEngine is installed.
+rotation:
+  cycle-days: 3
+  slots: [0, 1, 2, 9, 10, 11]
+  candidates:
+    beetroot:
+      source: VANILLA
+      item-id: BEETROOT
+      icon: BEETROOT
+      unit-price: 3.0
+      daily-limit: 512
+      name-key: markets.plants.rotation.beetroot.name
+    potatoes:
+      source: VANILLA
+      item-id: POTATO
+      icon: POTATO
+      unit-price: 2.5
+      daily-limit: 512
+      name-key: markets.plants.rotation.potatoes.name
+    melon:
+      source: VANILLA
+      item-id: MELON_SLICE
+      icon: MELON_SLICE
+      unit-price: 2.0
+      daily-limit: 512
+      name-key: markets.plants.rotation.melon.name
+    pumpkin:
+      source: VANILLA
+      item-id: PUMPKIN
+      icon: PUMPKIN
+      unit-price: 6.0
+      daily-limit: 256
+      name-key: markets.plants.rotation.pumpkin.name
+    sugar_cane:
+      source: VANILLA
+      item-id: SUGAR_CANE
+      icon: SUGAR_CANE
+      unit-price: 3.5
+      daily-limit: 512
+      name-key: markets.plants.rotation.sugar_cane.name
+    cocoa_beans:
+      source: VANILLA
+      item-id: COCOA_BEANS
+      icon: COCOA_BEANS
+      unit-price: 4.0
+      daily-limit: 384
+      name-key: markets.plants.rotation.cocoa_beans.name
+    sweet_berries:
+      source: VANILLA
+      item-id: SWEET_BERRIES
+      icon: SWEET_BERRIES
+      unit-price: 4.5
+      daily-limit: 384
+      name-key: markets.plants.rotation.sweet_berries.name
+    kelp:
+      source: VANILLA
+      item-id: KELP
+      icon: KELP
+      unit-price: 1.5
+      daily-limit: 768
+      name-key: markets.plants.rotation.kelp.name
+
+    # Example CraftEngine candidate:
+    # ce_seasonal_crop:
+    #   source: CRAFT_ENGINE
+    #   item-id: epoch:seasonal_crop
+    #   icon: WHEAT
+    #   unit-price: 12.0
+    #   daily-limit: 256
+    #   name-key: markets.plants.rotation.ce_seasonal_crop.name

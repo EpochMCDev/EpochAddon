@@ -70,7 +70,7 @@ public final class EpochMarketPlugin extends JavaPlugin {
         Clock clock = Clock.system(resetZone);
         InventoryService inventory = new InventoryService(matcher);
         SaleService sales = new SaleService(this, quotas, matcher, inventory, economy, clock);
-        MarketGuiService gui = new MarketGuiService(this, markets, language, matcher, sales, sounds);
+        MarketGuiService gui = new MarketGuiService(this, markets, language, matcher, sales, sounds, clock);
         Bukkit.getPluginManager().registerEvents(new MarketGuiListener(gui, sales, sounds), this);
 
         EpochMarketCommand executor = new EpochMarketCommand(this, gui, quotas, sales, language, clock, this::reloadServices);

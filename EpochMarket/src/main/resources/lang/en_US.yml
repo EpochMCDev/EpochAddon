@@ -75,3 +75,22 @@ markets:
         name: "<yellow>Wheat"
       carrots:
         name: "<gold>Carrot"
+    rotation:
+      beetroot:
+        name: "<red>Beetroot"
+      potatoes:
+        name: "<yellow>Potato"
+      melon:
+        name: "<green>Melon Slice"
+      pumpkin:
+        name: "<gold>Pumpkin"
+      sugar_cane:
+        name: "<green>Sugar Cane"
+      cocoa_beans:
+        name: "<brown>Cocoa Beans"
+      sweet_berries:
+        name: "<red>Sweet Berries"
+      kelp:
+        name: "<dark_green>Kelp"
+      ce_seasonal_crop:
+        name: "<light_purple>CraftEngine Seasonal Crop"

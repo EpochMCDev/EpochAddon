@@ -3,6 +3,8 @@ package com.epochmarket.config;
 import com.epochmarket.model.ItemSource;
 import com.epochmarket.model.Market;
 import com.epochmarket.model.MarketEntry;
+import com.epochmarket.model.RotatingCandidate;
+import com.epochmarket.model.RotatingStock;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -117,8 +119,72 @@ public final class MarketConfigService {
                 logger.severe("Skipped invalid entry '" + entryId + "' in " + fileName + ": " + exception.getMessage());
             }
         }
+        RotatingStock rotatingStock = parseRotatingStock(config.getConfigurationSection("rotation"),
+                occupiedSlots, rows, fileName);
         return new Market(id, titleKey, rows, config.getString("permission", ""), selectorIcon,
-                selectorNameKey, selectorLoreKey, parsedEntries);
+                selectorNameKey, selectorLoreKey, parsedEntries, rotatingStock);
+    }
+
+    private RotatingStock parseRotatingStock(ConfigurationSection rotation, boolean[] occupiedSlots, int rows,
+                                             String fileName) {
+        if (rotation == null) {
+            return null;
+        }
+        int cycleDays = rotation.getInt("cycle-days", -1);
+        if (cycleDays < 1) {
+            throw new IllegalArgumentException("rotation.cycle-days must be positive");
+        }
+
+        List<?> configuredSlots = rotation.getList("slots");
+        if (configuredSlots == null || configuredSlots.isEmpty()) {
+            throw new IllegalArgumentException("rotation.slots must contain at least one slot");
+        }
+        List<Integer> slots = new ArrayList<>();
+        for (Object value : configuredSlots) {
+            if (!(value instanceof Number number)) {
+                throw new IllegalArgumentException("rotation.slots must contain only numbers");
+            }
+            int slot = number.intValue();
+            if (slot < 0 || slot >= rows * 9) {
+                throw new IllegalArgumentException("rotation slot must be inside the market inventory");
+            }
+            if (occupiedSlots[slot]) {
+                throw new IllegalArgumentException("slot " + slot + " is already occupied");
+            }
+            occupiedSlots[slot] = true;
+            if (slots.contains(slot)) {
+                throw new IllegalArgumentException("rotation slot " + slot + " is duplicated");
+            }
+            slots.add(slot);
+        }
+
+        ConfigurationSection candidatesSection = rotation.getConfigurationSection("candidates");
+        if (candidatesSection == null) {
+            throw new IllegalArgumentException("missing rotation.candidates section");
+        }
+        List<RotatingCandidate> candidates = new ArrayList<>();
+        for (String candidateId : candidatesSection.getKeys(false)) {
+            ConfigurationSection candidate = candidatesSection.getConfigurationSection(candidateId);
+            if (candidate == null) {
+                logger.warning("Skipped non-section rotation candidate '" + candidateId + "' in " + fileName);
+                continue;
+            }
+            try {
+                candidates.add(new RotatingCandidate(
+                        candidateId,
+                        ItemSource.parse(required(candidate, "source", fileName)),
+                        required(candidate, "item-id", fileName),
+                        material(required(candidate, "icon", fileName)),
+                        new BigDecimal(required(candidate, "unit-price", fileName)),
+                        candidate.getInt("daily-limit", -1),
+                        required(candidate, "name-key", fileName)
+                ));
+            } catch (Exception exception) {
+                logger.severe("Skipped invalid rotation candidate '" + candidateId + "' in " + fileName
+                        + ": " + exception.getMessage());
+            }
+        }
+        return new RotatingStock(cycleDays, slots, candidates);
     }
 
     private static String required(ConfigurationSection section, String path, String source) {
@@ -137,4 +203,3 @@ public final class MarketConfigService {
         return material;
     }
 }
-

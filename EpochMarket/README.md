@@ -55,6 +55,24 @@ entries:
 
 原版条目不会收购具有 CraftEngine 或 Slimefun 标识的同材质自定义物品。相同物品出现在不同市场或不同条目时，额度互相独立。
 
+市场可以额外配置 `rotation` 区域。它会在每个周期从 `candidates` 中无重复地抽取商品，按配置顺序填入 `slots`；同一周期内所有玩家看到的结果一致，服务器重启也不会改变结果。周期从 `reset-timezone` 的当地日期零点开始。
+
+```yaml
+rotation:
+  cycle-days: 3
+  slots: [0, 1, 2, 9, 10, 11]
+  candidates:
+    seasonal_crop:
+      source: CRAFT_ENGINE
+      item-id: epoch:seasonal_crop
+      icon: WHEAT
+      unit-price: 12.0
+      daily-limit: 256
+      name-key: markets.plants.rotation.seasonal_crop.name
+```
+
+`rotation.slots` 的数量决定轮换位数量；候选数量必须不少于槽位数量。`source: CRAFT_ENGINE` 使用 CraftEngine 自定义物品 ID，CraftEngine 未安装或 ID 不存在时，该轮换位会显示为暂不可用。
+
 ## 数据与每日刷新
 
 每日额度保存在 `plugins/EpochMarket/market.db`。记录以“玩家 UUID + 市场 ID + 条目 ID + 当地日期”为键，因此服务重启不会丢失额度，进入新的一天时会自然从零开始。

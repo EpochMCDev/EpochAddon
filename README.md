@@ -7,7 +7,7 @@ EpochMC 国战服务器使用的 Paper 26.2 插件集合。
 | Gradle 模块 | 插件 | 说明 |
 | --- | --- | --- |
 | `common` | EpochCommon | 共享服务与统一计分板，支持 Vault、Nodes 和 PlaceholderAPI |
-| `epoch-market` | EpochMarket | 分类收购市场、每日额度、确认 GUI 和可配置音效 |
+| `epoch-market` | EpochMarket | 分类收购市场、每日额度、周期轮换商品、确认 GUI 和可配置音效 |
 | `epoch-minerals` | EpochMinerals | 挖掘积分、周期矿物奖励、矿脉/指令增益和计分板模块 |
 | `Slimefun4` | Slimefun | 定制 Slimefun4，内置 EpochRebirth 复活图腾、缚魂瓶、瓶装魂和治愈系统 |
 
